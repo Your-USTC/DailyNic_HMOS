@@ -451,7 +451,7 @@ struct Index {
           .width('100%')
           .padding({ left: 8, right: 8, top: 8, bottom: 8 })
           .onClick(() => {
-            this.pageInfo.replacePath({ name: 'Schedule', param: this.windowRect.height }, true)
+            this.pageInfo.pushPath({ name: 'Schedule', param: this.windowRect.height }, true)
             // this.getUIContext().getRouter().pushUrl({ url: 'pages/Schedule' })
             //   .catch((err: Error) => { console.error(`Router ERROR: [${err.name}] ${err.message}`) })
           })
