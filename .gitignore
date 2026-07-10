@@ -2,6 +2,7 @@
 /oh_modules
 /local.properties
 /.idea
+/.codegenie
 **/build
 /.hvigor
 .cxx
