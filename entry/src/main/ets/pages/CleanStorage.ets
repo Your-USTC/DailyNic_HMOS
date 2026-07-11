@@ -82,9 +82,9 @@ struct CleanStorage {
       ]);
       this.appSize = stat[0].appSize;
       this.cacheSize = stat[0].cacheSize;
-      this.dataSize = stat[0].dataSize;
+      this.dataSize = stat[0].dataSize - this.cacheSize;
       this.deviceSize = stat[1];
-      this.totalSize = this.appSize + this.cacheSize + this.dataSize;
+      this.totalSize = stat[0].appSize + stat[0].dataSize;
       this.otherSize = stat[2] - this.totalSize;
       this.percentage = `${(this.totalSize / this.deviceSize * 100).toPrecision(3)}%`
     } catch(err) {

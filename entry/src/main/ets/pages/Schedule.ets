@@ -1339,7 +1339,7 @@ struct Schedule {
 
   @Builder ClassDetailDialog() {
     Column() {
-      Row({ space: 5 }) {
+      Row({ space: 6 }) {
         Text(this.isChangeSchedule ? $r('app.string.class_detail') : $r('app.string.class_detail_new'))
           .fontWeight(FontWeight.Bold)
           .fontSize(24)

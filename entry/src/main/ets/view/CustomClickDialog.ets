@@ -1,8 +1,7 @@
 
 import { CounterComponent, CounterType } from '@kit.ArkUI';
-import { customizeClick, gIndex_to_pic } from '../utils/FunctionOrder';
-import UnifiedPreferences from '../utils/UnifyPreference';
-import { GridData } from '../constants/Links';
+import { customizeClick, gIndex_to_pic, getClickCount } from '../utils/FunctionOrder';
+import { LINK, MultiLink } from '../constants/Links';
 import { refreshFunc, mostUsedFunc } from '../utils/FunctionOrder';
 import { presetColor } from '../utils/BgImageManager';
 import BackgroundImage from '../utils/BgImageManager';
@@ -13,7 +12,7 @@ export default struct CustomClick {
   gridIndex: number = 0;
   index: number = 0;
   clickTimes: number = 0;
-  @Link copyMostUsedFunc: GridData;
+  @Link copyMostUsedFunc: MultiLink[];
 
   build() {
     Column() {
@@ -22,9 +21,10 @@ export default struct CustomClick {
           .height(30)
           .margin({ right: 5 });
 
-        Text(otherGridDataList[this.gridIndex].gridItemList[this.index])
+        Text(LINK[this.gridIndex].set[this.index].title)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .maxLines(1)
           .layoutWeight(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis });
 
@@ -32,17 +32,17 @@ export default struct CustomClick {
           options: {
             type: CounterType.INLINE,
             inlineOptions: {
-              value: UnifiedPreferences.getNumberSync(`${this.gridIndex}.${this.index}`, 0),
+              value: getClickCount(this.gridIndex, this.index),
               min: 0, step: 1, max: 2147483647,
               onChange: (value: number) => { this.clickTimes = value; }
             }
           }
         })
       }
-      .width('95%')
+      .width('100%')
       .margin({ bottom: 5 })
 
-      Text($r('app.string.custom_click_into_s', otherGridDataList[this.gridIndex].gridItemList[this.index]))
+      Text($r('app.string.custom_click_into_s', LINK[this.gridIndex].set[this.index].title))
         .width('90%')
         .wordBreak(WordBreak.BREAK_ALL)
 

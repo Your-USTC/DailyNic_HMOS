@@ -1,103 +1,130 @@
+import { LINK, MultiLink, LinkSet } from '../constants/Links';
+import { fileIo } from '@kit.CoreFileKit';
 
-import { LinkAddress } from '../constants/Links';
-import { LINK } from '../constants/Links'
-import UnifiedPreferences from './UnifyPreference';
+const ORDER_FILE_PATH = '/data/storage/el2/base/haps/entry/files/functionOrder.json';
 
-export let mostUsedFunc: GridData = new GridData($r('app.string.ZuiJinShiYong'), [ $r('app.string.empty') ]);
+let clickDataCache: Record<string, number> | null = null;
+
+function loadClickData(): Record<string, number> {
+  if (clickDataCache !== null) {
+    return clickDataCache;
+  }
+  try {
+    if (fileIo.accessSync(ORDER_FILE_PATH)) {
+      clickDataCache = JSON.parse(fileIo.readTextSync(ORDER_FILE_PATH)) as Record<string, number>;
+    }
+  } catch (e) {
+    console.error('FunctionOrder: failed to load order file:', JSON.stringify(e));
+  }
+  if (clickDataCache === null) {
+    clickDataCache = {};
+  }
+  return clickDataCache;
+}
+
+function flushClickData(): void {
+  try {
+    const file = fileIo.openSync(ORDER_FILE_PATH, fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC);
+    fileIo.writeSync(file.fd, JSON.stringify(clickDataCache ?? {}));
+    fileIo.closeSync(file);
+  } catch (e) {
+    console.error('FunctionOrder: failed to save order file:', JSON.stringify(e));
+  }
+}
+
 export let order: Array<[string, number]> = [];
-export let maxRecord: number = UnifiedPreferences.getNumberSync('maxRecord', 8) as number;
+export let maxRecord: number = 8;
+
+export let mostUsedFunc: MultiLink[] = [];
 
 export function setFunc(toClear: boolean = false): void {
-  // toClear: 是否清空，默认为 false
   if (toClear) {
-    mostUsedFunc = new GridData($r('app.string.ZuiJinShiYong'), [ $r('app.string.empty') ]);
+    mostUsedFunc = [];
     order = [];
     return;
   }
-  mostUsedFunc.gridItemList = [];
-  maxRecord = UnifiedPreferences.getNumberSync('maxRecord', 8) as number;
-  let maxCount: number = 0;
-  for (let singleFunc of order) {
-    let index_to_name = LINK.get(singleFunc[0])?.title;
-    if (index_to_name === undefined) {
-      continue;
+  let count = 0;
+  const result: MultiLink[] = [];
+  for (const entry of order) {
+    const parts = entry[0].split('.');
+    const gridIndex = Number(parts[0]);
+    const index = Number(parts[1]);
+    if (gridIndex < LINK.length && index < LINK[gridIndex].set.length) {
+      result.push(LINK[gridIndex].set[index]);
+      if (++count >= maxRecord) {
+        break;
+      }
     }
-    mostUsedFunc.gridItemList.push(index_to_name);
-    maxCount++;
-    if (maxCount >= maxRecord)
-      break;
   }
+  mostUsedFunc = result;
 }
 
-export function setMaxRecord(value: number) {
+export function setMaxRecord(value: number): void {
   maxRecord = value;
-  UnifiedPreferences.putSync('maxRecord', value);
 }
 
 export function recordClick(gridIndex: number, index: number): void {
-  if (gridIndex == -1) // 常用区 (-1) 不记录
+  if (gridIndex === -1) {
     return;
-  let preName: string = gridIndex.toString() + '.' + index.toString(); // 按钮对应首选项名称
-  let latestTime: number = UnifiedPreferences.getNumberSync(preName, 0); // 读取点击次数
-
-  if (latestTime < 2147483619) {
-    latestTime++; // 点击次数+1
-    UnifiedPreferences.putSync(preName, latestTime); // 保存新的点击次数
+  }
+  const data = loadClickData();
+  const key = `${gridIndex}.${index}`;
+  const current = data[key] ?? 0;
+  if (current < 2147483619) {
+    data[key] = current + 1;
+    clickDataCache = data;
+    flushClickData();
   }
 }
 
 export function customizeClick(gridIndex: number, index: number, clickTimes: number): void {
-  if (gridIndex == -1 || clickTimes > 2147483647) // 常用区 (-1) 不记录，数据过大不记录
+  if (gridIndex === -1 || clickTimes > 2147483647) {
     return;
-
-  if (clickTimes > 0)
-    UnifiedPreferences.putSync(gridIndex.toString() + '.' + index.toString(), clickTimes); // 按钮对应首选项名称
-  else
-    UnifiedPreferences.deleteSync(gridIndex.toString() + '.' + index.toString());
+  }
+  const data = loadClickData();
+  data[`${gridIndex}.${index}`] = clickTimes;
+  clickDataCache = data;
+  flushClickData();
 }
 
 export function refreshFunc(): void {
-  order = []
-  for (let gridIndex = 0; gridIndex < totalGridNum; gridIndex++) {
-    for (let index = 0; index < eachGridNum[gridIndex]; index++) {
-      let preName: string = gridIndex.toString() + '.' + index;
-      if (UnifiedPreferences.hasSync(preName)) {
-        let preTimes: number = UnifiedPreferences.getNumberSync(preName, 0);
-        order.push([preName, preTimes]);
-      }
+  const data = loadClickData();
+  order = [];
+  for (const key of Object.keys(data)) {
+    if (data[key] > 0) {
+      order.push([key, data[key]] as [string, number]);
     }
   }
-  if (order.length == 0)
+  if (order.length === 0) {
     setFunc(true);
-  else {
+  } else {
     order.sort((a, b) => b[1] - a[1]);
     setFunc();
   }
 }
 
-export function resetFunc(): void { // 重置"最常访问"
-  for (let gridIndex = 0; gridIndex < totalGridNum; gridIndex++) {
-    for (let index = 0; index < eachGridNum[gridIndex]; index++) {
-      let preName: string = gridIndex.toString() + '.' + index;
-      if (UnifiedPreferences.hasSync(preName)) {
-        UnifiedPreferences.deleteSync(preName);
-      }
-    }
-  }
+export function resetFunc(): void {
+  clickDataCache = {};
+  flushClickData();
   setFunc(true);
 }
 
-export function gIndex_to_pic(gridIndex: number, index: number): ResourceStr { // 最常访问部分映射
-  if (gridIndex == -1){
-    if (order.length <= index)
+export function getClickCount(gridIndex: number, index: number): number {
+  const data = loadClickData();
+  return data[`${gridIndex}.${index}`] ?? 0;
+}
+
+export function gIndex_to_pic(gridIndex: number, index: number): ResourceStr {
+  if (gridIndex === -1) {
+    if (order.length <= index) {
       return $r('app.media.default_function_icon');
-    let preName: string = order[index][0];
-    gridIndex = Number(preName.split('.')[0]);
-    index = Number(preName.split('.')[1]);
+    }
+    const parts = order[index][0].split('.');
+    gridIndex = Number(parts[0]);
+    index = Number(parts[1]);
   }
-  let result = index_to_pic.get(gridIndex.toString() + '.' + index.toString());
-  if (result == undefined)
-    return $r('app.media.default_function_icon');
-  else
-    return result;
+  if (gridIndex < LINK.length && index < LINK[gridIndex].set.length) {
+    return LINK[gridIndex].set[index].icon;
+  }
+  return $r('app.media.default_function_icon');
 }

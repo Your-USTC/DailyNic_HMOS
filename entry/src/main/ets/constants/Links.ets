@@ -70,7 +70,7 @@ export const LINK: LinkSet[] = [
       { url: 'https://i.chaoxing.com', subtitle: '学习通' },
       { url: 'https://www.icourse163.org/university/USTC#/c', subtitle: '慕课' }]},
     { title: $r('app.string.JiKaoZiCe'), icon: $r('app.media.default_function_icon'), url: [
-      { url: 'MockPracticeList', subtitle: '本地答题' },
+      { url: 'MockPracticeList', subtitle: '本地答题', notUrl: true },
       { url: 'https://ti.u5tc.cn/', subtitle: 'vitx 答题' },
       { url: 'https://quiz-stack.enthusjast.cc/', subtitle: 'Quiz Stack' }]},
     { title: $r('app.string.WolframAlpha'), url: [{ url: 'https://wolframalpha.com' }], icon: $r('app.media.WolframAlpha') }

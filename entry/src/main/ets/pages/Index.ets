@@ -2,8 +2,6 @@
 import { common } from '@kit.AbilityKit'
 import { LengthUnit } from '@kit.ArkUI'
 
-import { GridData } from '../constants/Links'
-import { ListDataConstants } from '../constants/ListDataConstants'
 import * as ScheduleSources from '../constants/ScheduleSources'
 import SettingsData from '../constants/SettingsSources'
 
@@ -16,7 +14,7 @@ import UnifiedPreferences, { millisecondsPerWeek } from '../utils/UnifyPreferenc
 import WriteCalendar from '../utils/WriteCalendar'
 
 import BackgroundImage, { presetColor } from '../utils/BgImageManager'
-import GridComponent from '../view/GridComponent'
+import { GridComponent, MostRecentComponent } from '../view/GridComponent'
 import PasswordDialog from '../view/PasswordDialog'
 import ItemData from '../view/SettingsComponent'
 
@@ -27,7 +25,7 @@ import { importNewTest } from '../utils/MockPractice/QuestionsManager'
 import { getAllTest, removeTest } from '../utils/MockPractice/TestManager'
 import { hdsMaterial, HdsNavigation, HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
 import accountInfoProvider from '../utils/Encryption'
-import { LinkSet, LINK } from '../constants/Links'
+import { LinkSet, LINK, SimpleLink, MultiLink } from '../constants/Links'
 
 // 滚动条参数
 enum ScrollPosition {
@@ -178,10 +176,10 @@ struct Index {
   @Builder listBuilder() {
     Row() {
       List({ space: 16, scroller: this.scrollerForTitle }) {
-        ForEach(ListDataConstants.TITLE_LIST, (item: string, index) => {
+        ForEach(LINK, (item: LinkSet, index) => {
           ListItem() {
             Column() {
-              Text(item)
+              Text(item.title)
                 .fontColor(this.currentListIndex === index ? presetColor[BackgroundImage.themeColor][2] : $r('app.color.normal_text'))
                 .fontSize('16fp')
                 .fontWeight(this.currentListIndex === index ? FontWeight.Bold : FontWeight.Normal)
@@ -190,7 +188,7 @@ struct Index {
               Divider()
                 .color(presetColor[BackgroundImage.themeColor][2])
                 .strokeWidth(2)
-                .width(this.getUIContext().getMeasureUtils().measureText({ textContent: item, fontSize: '16fp' }).toString() + 'px')
+                .width(this.getUIContext().getMeasureUtils().measureText({ textContent: item.title, fontSize: '16fp' }).toString() + 'px')
                 .margin({ top: '4vp' })
                 .visibility(this.currentListIndex === index ? Visibility.Visible : Visibility.Hidden)
             }
@@ -202,7 +200,7 @@ struct Index {
               this.currentListIndex = index;
             })
           }
-        }, (item: string, index: number) => index + JSON.stringify(item))
+        })//, (item: string, index: number) => index + JSON.stringify(item))
       }
       .width('100%')
       .height('51vp')
@@ -219,7 +217,7 @@ struct Index {
     .borderRadius(20)
   }
 
-  @State copyMostUsedFunc: GridData = FunctionOrder.mostUsedFunc;
+  @State copyMostUsedFunc: MultiLink[] = FunctionOrder.mostUsedFunc;
 
   /**
    * 全局资源: 设置
@@ -807,8 +805,7 @@ struct Index {
       Scroll(this.scrollerForScroll) {
         Column() {
           // 常用区 Grid
-          GridComponent({ gridData: this.copyMostUsedFunc, gridIndex: -1, pageInfo: this.pageInfo,
-            copyMostUsedFunc: this.copyMostUsedFunc })
+          MostRecentComponent({ gridData: this.copyMostUsedFunc, pageInfo: this.pageInfo, copyMostUsedFunc: this.copyMostUsedFunc })
           // 常用区下面的所有功能区 GridComponent
           this.listBuilder();
           List({ scroller: this.scrollerForList }) {
@@ -819,7 +816,7 @@ struct Index {
                 pageInfo: this.pageInfo,
                 copyMostUsedFunc: this.copyMostUsedFunc
               })
-            }, (item: GridData,index:number) => index + JSON.stringify(item))
+            })//, (item: GridData,index:number) => index + JSON.stringify(item))
 
             ListItem().height('100%')
           }
@@ -838,7 +835,7 @@ struct Index {
             this.scrollerForTitle.scrollToIndex(this.currentListIndex);
           })
           .onScrollFrameBegin((offset: number) => {
-            if (this.currentListIndex === ListDataConstants.TITLE_LIST.length - 1 && offset > 0) {
+            if (this.currentListIndex === LINK.length - 1 && offset > 0) {
               return { offsetRemain: 0 }
             }
             if (!((this.listPosition === ScrollPosition.start && offset < 0) ||
@@ -924,7 +921,7 @@ struct Index {
             this.pageInfo.clear();
             this.pageInfo.pushPath({ name: "Webview", param: {
               title: $r('app.string.GeRenZhongXin'),
-              url: 'https://id.ustc.edu.cn/gate/cas-success/personal-center-home-page' } as Link });
+              url: 'https://id.ustc.edu.cn/gate/cas-success/personal-center-home-page' } as SimpleLink });
           })
         }
         .width('100%')

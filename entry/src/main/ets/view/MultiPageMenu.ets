@@ -1,6 +1,6 @@
-import { GridData, MultiLink } from "../constants/Links"
+import { LinkSet, MultiLink } from "../constants/Links"
 import { LINK } from "../constants/Links"
-import PageRouter from "../utils/PageRouter"
+import { pushRedirect } from '../utils/PageRouter';
 
 export let webName: ResourceStr[] = [];
 
@@ -11,14 +11,12 @@ export function resetWebName(title?: ResourceStr) {
     webName = [];
 }
 
-@Builder function singleGridItem(pageInfo: NavPathStack, linkName: ResourceStr[], groupIndex: number) {
+@Builder function singleGridItem(pageInfo: NavPathStack, elements: MultiLink[], title: ResourceStr) {
   Menu() {
-    ForEach(linkName, (item: ResourceStr, index: number) => {
-      MenuItem({ content: item })
+    ForEach(elements, (item: MultiLink, index: number) => {
+      MenuItem({ content: item.title })
         .onClick(() => {
-          const paramData = LINK[groupIndex].set[index];
-          webName.push(paramData?.title ?? 'blank');
-          pageInfo.pushPath({ name: "Webview", param: paramData });
+          pushRedirect(pageInfo, item.url[0], title);
         })
     })
   }
@@ -29,10 +27,10 @@ export function resetWebName(title?: ResourceStr) {
     MenuItem({ content: '同时打开过多网页\n会占用大量内存', startIcon: $r('app.media.exclamationmark_circle') })
       .contentFont({ size: 14 })
       .hitTestBehavior(HitTestMode.None)
-    ForEach(LINK, (item: MultiLink[], index: number) => {
+    ForEach(LINK, (item: LinkSet, index: number) => {
       MenuItem({
-        content: item.,
-        builder: singleGridItem(pageInfo, item.gridItemList, index),
+        content: item.title,
+        builder: singleGridItem(pageInfo, item.set, item.title),
         endIcon: $r('sys.media.ohos_ic_public_arrow_right')
       })
     })

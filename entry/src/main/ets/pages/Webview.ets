@@ -3,7 +3,6 @@ import { webview } from '@kit.ArkWeb';
 import { abilityAccessCtrl, common } from '@kit.AbilityKit';
 import { picker, fileUri } from  '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { Link } from '../constants/Links';
 import { WantAbility } from '../utils/WantAbility';
 import PasswordDialog from '../view/PasswordDialog';
 import accountInfoProvider from '../utils/Encryption';
@@ -14,6 +13,7 @@ import UnifiedPreferences, { PASSWORD_KEY, REMIND_KEY, UID_KEY} from '../utils/U
 import { DESKTOP_MODE, MOBILE_MODE, TABLET_MODE, DESKTOP_UA, MOBILE_UA, TABLET_UA } from '../constants/UserAgent';
 import { deviceType } from '../constants/BasicConstants';
 import { checkPermission } from '../utils/PermissionManager';
+import { SimpleLink } from '../constants/Links';
 
 const desktopUrl: string[] = ['https://young.ustc.edu.cn/login'] // 需要默认访问桌面版站点时使用
 const autoJumpUrl: string[] = ['https://jw.ustc.edu.cn/for-std/course-table', 'https://jw.ustc.edu.cn/for-std/exam-arrange', 'https://jw.ustc.edu.cn/for-std/grade/sheet'];
@@ -21,7 +21,7 @@ const autoJumpUrl: string[] = ['https://jw.ustc.edu.cn/for-std/course-table', 'h
 let eachDownloadPercent = new Map<string, number>();
 
 @Builder
-export function WebBuilder(name: string, param?: Link) {
+export function WebBuilder(name: string, param?: SimpleLink) {
   if (param)
     Webview({ title: param.title as string, url: param.url as string });
   else
@@ -54,6 +54,7 @@ struct Webview {
     }),
     autoCancel: true
   })
+  tmpDialogController: undefined;
 
   showMessage(message: string | ResourceStr, duration: number) {
     try {

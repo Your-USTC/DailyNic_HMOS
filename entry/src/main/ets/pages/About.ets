@@ -9,10 +9,10 @@ import { common } from '@kit.AbilityKit'
 import { systemShare } from '@kit.ShareKit';
 import { uniformTypeDescriptor } from '@kit.ArkData';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { Link } from '../constants/Links';
 import UpdateInfo from '../view/UpdateInfo';
 import { WantAbility } from '../utils/WantAbility'
 import { currentAppVersion } from '../constants/BasicConstants'
+import { SimpleLink } from '../constants/Links'
 
 @Builder
 export function AboutBuilder(name: string, param?: Object) {
@@ -75,7 +75,7 @@ struct About {
                     this.pathStack.pushPath({ name: 'Webview', param: {
                       title: $r('app.string.homepage_website'),
                       url: 'https://dailynic.feixu.site/'
-                    } as Link});
+                    } as SimpleLink});
                   })
                 Span('  |  ')
                   .decoration(undefined)
@@ -128,7 +128,7 @@ struct About {
                     this.pathStack.pushPath({ name: 'Webview', param: {
                       title: $r('app.string.open_source_license'),
                       url: $rawfile('OpenSourceLicense.html')
-                    } as Link});
+                    } as SimpleLink});
                   })
               }
 
@@ -152,7 +152,7 @@ struct About {
                     this.pathStack.pushPath({ name: 'Webview', param: {
                       title: $r('app.string.terms_of_use_and_privacy_policy'),
                       url: $rawfile('TermsOfUse.html')
-                    } as Link});
+                    } as SimpleLink});
                   })
 
                 Span('  |  ')
@@ -164,7 +164,7 @@ struct About {
                     this.pathStack.pushPath({ name: 'Webview', param: {
                       title: $r('app.string.beian_query'),
                       url: 'https://beian.miit.gov.cn/'
-                    } as Link});
+                    } as SimpleLink});
                   })
               }
               .fontSize(12)
