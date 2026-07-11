@@ -13,7 +13,7 @@ export const AnswerFileName = 'AnswerRounds.json';
  *   - uuid2
  */
 
-interface answerMark {
+export interface answerMark {
   starred: boolean,
   ignore: boolean
 }
@@ -30,17 +30,44 @@ export interface singleQuestion extends answerMark {
   options: string[]
 }
 
+export type PracticeMode = 'ordered' | 'random' | 'incorrect'
+
 export interface answerSessionAttribute {
   lastAnswerTime: number,
-  mode: 'ordered' | 'random' | 'incorrect',
+  mode: PracticeMode,
   starred: boolean,
   marks: answerMark[],
-  questionNO?: number[] // 仅针对错题 incorrect
+  questionNO?: number[]
+}
+
+export interface answerRecord {
+  questionIndex: number
+  userAnswer: string
+  isCorrect: boolean
+  timestamp: number
+}
+
+export interface answerSession extends answerSessionAttribute {
+  answers: answerRecord[]
+  currentIndex: number
+}
+
+export interface sessionSummary {
+  total: number
+  answered: number
+  correct: number
+  wrong: number
+}
+
+export interface testAttributeUpdate {
+  name?: string,
+  createTime?: number,
+  lastOpenTime?: number,
 }
 
 export interface testAttribute {
   name: string,
   createTime: number,
-  lastOpenTime: number, // 0 表示未作答过
+  lastOpenTime: number,
   uuid: string,
 }

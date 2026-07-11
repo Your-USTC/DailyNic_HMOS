@@ -5,5 +5,8 @@ import { singleQuestion } from './constants';
 
 export async function importNewTest(title: string, context: UIContext) {
   const data: singleQuestion[] = getObjectFromCsv(await readDataFromCsv(context.getHostContext() as common.UIAbilityContext));
-  createTest(data);
+  if (data.length === 0) {
+    return;
+  }
+  createTest(data, title);
 }

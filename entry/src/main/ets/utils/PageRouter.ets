@@ -37,6 +37,7 @@ export struct linkPickerDialog {
         Text(LINK[this.gridIndex].set[this.index].title)
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .textAlign(TextAlign.Center)
           .layoutWeight(1)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis });
@@ -56,13 +57,14 @@ export struct linkPickerDialog {
 
       ForEach(LINK[this.gridIndex].set[this.index].url, (item: LinkAddress, index: number) => {
         Row({ space: 5 }) {
-          Text(index.toString())
+          Text((index + 1).toString())
             .width(30)
             .fontSize(18)
             .textAlign(TextAlign.Center)
             .fontWeight(FontWeight.Bold)
           Text(item.subtitle)
             .layoutWeight(1)
+            .textAlign(TextAlign.Center)
         }
         .width('100%')
         .height(40)

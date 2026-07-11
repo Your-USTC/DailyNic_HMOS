@@ -39,7 +39,11 @@ export let mostUsedFunc: MultiLink[] = [];
 
 export function setFunc(toClear: boolean = false): void {
   if (toClear) {
-    mostUsedFunc = [];
+    mostUsedFunc = [{
+      title: $r('app.string.empty'),
+      icon: $r('app.media.default_function_icon'),
+      url: []
+    }];
     order = [];
     return;
   }

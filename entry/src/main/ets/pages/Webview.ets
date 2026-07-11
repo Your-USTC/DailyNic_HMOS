@@ -141,28 +141,18 @@ struct Webview {
 
       MenuItem({ content: $r('app.string.share'), startIcon: $r('app.media.share') })
         .onClick(() => {
-          const favicon = this.webviewController.getFavicon();
-          const originSize = favicon.getImageInfoSync().size;
-          const magnification = Math.min(50 / originSize.height, 50 / originSize.width);
-          if (magnification < 1) {
-            favicon.scaleSync(magnification, magnification);
-          }
-          const readBuffer = new Uint8Array(favicon.getPixelBytesNumber());
-          favicon.readPixelsToBufferSync(readBuffer);
           const webTitle = this.webviewController.getTitle();
           const webUrl = this.webviewController.getUrl();
           const shareData = new systemShare.SharedData({
             utd: uniformTypeDescriptor.UniformDataType.HYPERLINK,
             content: webUrl,
             title: webTitle,
-            thumbnail: readBuffer,
             description: '分享链接'
           });
           shareData.addRecord({
             utd: uniformTypeDescriptor.UniformDataType.TEXT,
             content: `我通过妮可之记向你分享了一个网址：[${webTitle}](${webUrl})`,
             title: webTitle,
-            thumbnail: readBuffer,
             description: '分享链接'
           });
           const shareController = new systemShare.ShareController(shareData);
