@@ -61,6 +61,9 @@
 ### MatePad Air 12 2025
 <image src="resources/pad.png" width="480"/>
 
+## 系统要求
+`HarmonyOS NEXT 6.1.0`及以上版本
+
 ## 开发指南
 
 ### 环境构建

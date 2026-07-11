@@ -210,7 +210,7 @@
     },
     {
       "name": "storage_stat",
-      "value": "占用存储空间统计"
+      "value": "存储空间管理"
     },
     {
       "name": "clean_cache",

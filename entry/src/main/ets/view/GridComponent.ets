@@ -105,7 +105,7 @@ export struct GridComponent {
           pageInfo: this.pageInfo
         }),
         autoCancel: true,
-        gridCount: 4
+        gridCount: 3
       });
       this.gridDialog.open();
     }
@@ -309,7 +309,7 @@ export struct MostRecentComponent {
           pageInfo: this.pageInfo
         }),
         autoCancel: true,
-        gridCount: 4
+        gridCount: 3
       });
       this.gridDialog.open();
     }

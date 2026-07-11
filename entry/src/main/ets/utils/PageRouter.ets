@@ -29,10 +29,10 @@ export struct linkPickerDialog {
   pageInfo: NavPathStack = new NavPathStack();
   build() {
     Column() {
-      Row({ space: 5 }) {
+      Row({ space: 6 }) {
         Image(gIndex_to_pic(this.gridIndex, this.index))
-          .height(30)
-          .margin({ right: 5 });
+          .height(36)
+          .width(36)
 
         Text(LINK[this.gridIndex].set[this.index].title)
           .fontSize(20)
@@ -53,12 +53,13 @@ export struct linkPickerDialog {
         })
       }
       .width('100%')
-      .margin({ bottom: 5 })
 
       ForEach(LINK[this.gridIndex].set[this.index].url, (item: LinkAddress, index: number) => {
-        Row() {
+        Row({ space: 5 }) {
           Text(index.toString())
-            .margin({ right: 6 })
+            .width(30)
+            .fontSize(18)
+            .textAlign(TextAlign.Center)
             .fontWeight(FontWeight.Bold)
           Text(item.subtitle)
             .layoutWeight(1)
@@ -70,10 +71,11 @@ export struct linkPickerDialog {
         .width('100%')
         .height(40)
 
-        Divider()
+        if (index < LINK[this.gridIndex].set[this.index].url.length - 1)
+          Divider()
       })
     }
-    .padding(16)
+    .padding({ top: 16, right: 16, left: 16, bottom: 8 })
     .width('100%')
   }
 }

@@ -16,10 +16,10 @@ export default struct CustomClick {
 
   build() {
     Column() {
-      Row() {
+      Row({ space: 5 }) {
         Image(gIndex_to_pic(this.gridIndex, this.index))
           .height(30)
-          .margin({ right: 5 });
+          .width(30)
 
         Text(LINK[this.gridIndex].set[this.index].title)
           .fontSize(20)
@@ -39,7 +39,7 @@ export default struct CustomClick {
           }
         })
       }
-      .width('100%')
+      .width('97%')
       .margin({ bottom: 5 })
 
       Text($r('app.string.custom_click_into_s', LINK[this.gridIndex].set[this.index].title))
