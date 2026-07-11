@@ -1,4 +1,4 @@
-import { LinkSet, MultiLink } from "../constants/Links"
+import { LinkAddress, LinkSet, MultiLink, SimpleLink } from "../constants/Links"
 import { LINK } from "../constants/Links"
 import { pushRedirect } from '../utils/PageRouter';
 
@@ -11,13 +11,36 @@ export function resetWebName(title?: ResourceStr) {
     webName = [];
 }
 
-@Builder function singleGridItem(pageInfo: NavPathStack, elements: MultiLink[], title: ResourceStr) {
+@Builder function multiUrl(pageInfo: NavPathStack, urls: LinkAddress[], title: ResourceStr) {
+  Menu() {
+    ForEach(urls, (item: LinkAddress, index: number) => {
+      MenuItem({ content: item.subtitle })
+        .onClick(() => {
+          if (item.notUrl) {
+            pageInfo.pushPath({ name: item.url as string });
+          } else {
+            pageInfo.pushPath({ name: "Webview", param: { title: title, url: item.url } as SimpleLink })
+          }
+        })
+    })
+  }
+}
+
+@Builder function singleGridItem(pageInfo: NavPathStack, elements: MultiLink[]) {
   Menu() {
     ForEach(elements, (item: MultiLink, index: number) => {
-      MenuItem({ content: item.title })
-        .onClick(() => {
-          pushRedirect(pageInfo, item.url[0], title);
-        })
+      if (item.url.length === 1) {
+        MenuItem({ content: item.title })
+          .onClick(() => {
+            if (item.url[0].notUrl) {
+              pageInfo.pushPath({ name: item.url[0].url as string });
+            } else {
+              pageInfo.pushPath({ name: "Webview", param: { title: item.title, url: item.url[0].url } as SimpleLink })
+            }
+          })
+      } else {
+        MenuItem({ content: item.title, builder: multiUrl(pageInfo, item.url, item.title), endIcon: $r('sys.media.ohos_ic_public_arrow_right') })
+      }
     })
   }
 }
@@ -30,7 +53,7 @@ export function resetWebName(title?: ResourceStr) {
     ForEach(LINK, (item: LinkSet, index: number) => {
       MenuItem({
         content: item.title,
-        builder: singleGridItem(pageInfo, item.set, item.title),
+        builder: singleGridItem(pageInfo, item.set),
         endIcon: $r('sys.media.ohos_ic_public_arrow_right')
       })
     })

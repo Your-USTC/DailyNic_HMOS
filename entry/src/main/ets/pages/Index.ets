@@ -335,30 +335,6 @@ struct Index {
    */
   @Builder pageStart() {
     List({ space: 10 }) {
-      ListItem()
-      {
-        Row() {
-          Button('import')
-            .onClick(() => {
-              this.pageInfo.pushPath({ name: 'MockPracticeList' });
-            })
-          Button('check')
-            .onClick(() => {
-              console.log('excel check');
-              getAllTest();
-            })
-          Button('delete')
-            .onClick(() => {
-              console.log('excel delete');
-              const testList = getAllTest();
-              if (testList.length > 0)
-                removeTest(testList[0].uuid);
-            })
-        }
-      }
-      .height(50)
-      .width('100%')
-
       // 每日签到
       if (this.showCheckIn) {
         ListItem() {
@@ -904,16 +880,18 @@ struct Index {
             .fontWeight(FontWeight.Bold)
             .layoutWeight(1)
           Button({ buttonStyle: ButtonStyleMode.NORMAL, type: ButtonType.Circle }) {
-            SymbolGlyph($r('sys.symbol.key'))
-              .fontSize(20)
+            Image($r('app.media.key_horizontal'))
+              .height(20)
+              .width(20)
           }
           .width(36)
           .height(36)
           .onClick(() => this.dialogController.open())
 
           Button({ buttonStyle: ButtonStyleMode.NORMAL, type: ButtonType.Circle }) {
-            SymbolGlyph($r('sys.symbol.person'))
-              .fontSize(20)
+            Image($r('app.media.person'))
+              .height(20)
+              .width(20)
           }
           .width(36)
           .height(36)

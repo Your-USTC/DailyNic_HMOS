@@ -215,8 +215,7 @@ struct About {
           .onClick(() => {
             if (this.iconThumbnail === undefined) {
               // 获取资源文件内容，返回Uint8Array。
-              this.iconThumbnail =
-                ((this.context.getHostContext() as common.UIAbilityContext).resourceManager).getRawFileContentSync('IconThumbnail.png');
+              this.iconThumbnail = ((this.context.getHostContext() as common.UIAbilityContext).resourceManager).getRawFileContentSync('IconThumbnail.png');
             }
 
             if (this.shareController === undefined) {
