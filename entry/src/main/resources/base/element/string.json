@@ -61,6 +61,10 @@
       "value": "本地课表"
     },
     {
+      "name": "local_schedule_daily_nic",
+      "value": "妮可之记·本地课表"
+    },
+    {
       "name": "all_semesters",
       "value": "所有学期"
     },
@@ -99,6 +103,10 @@
     {
       "name": "delete_semester_or_not",
       "value": "你真的要删掉这个学期吗？"
+    },
+    {
+      "name": "delete_most_used_func_or_not",
+      "value": "你真的要清空「最常访问」吗？"
     },
     {
       "name": "online_schedule",
@@ -201,8 +209,12 @@
       "value": "开关"
     },
     {
-      "name": "wipe_cache",
-      "value": "清除应用缓存"
+      "name": "storage_stat",
+      "value": "占用存储空间统计"
+    },
+    {
+      "name": "clean_cache",
+      "value": "清理缓存（不影响 Cookies）"
     },
     {
       "name": "switch_page",
@@ -213,16 +225,12 @@
       "value": "清除 Cookies"
     },
     {
-      "name": "wipe_cache_success",
-      "value": "清理成功"
-    },
-    {
       "name": "about",
       "value": "关于「妮可之记」App"
     },
     {
       "name": "exit_app",
-      "value": "\uDB80\uDC36  退出「妮可之记」App"
+      "value": "退出「妮可之记」App"
     },
     {
       "name": "show_check_in",
@@ -342,11 +350,11 @@
     },
     {
       "name": "web_back_press",
-      "value": "网页中侧滑直接返回首页"
+      "value": "网页中侧滑回到首页"
     },
     {
       "name": "set_default_UA",
-      "value": "设置默认浏览器标识"
+      "value": "默认浏览器标识"
     },
     {
       "name": "clear_calendar",
@@ -403,6 +411,10 @@
     {
       "name": "conflict_class_detail_d",
       "value": "第%d周重叠课程"
+    },
+    {
+      "name": "conflict_class_help",
+      "value": "更改优先级以优先显示特定课程"
     },
     {
       "name": "unsaved_change",
@@ -949,6 +961,10 @@
       "value": "备案查询"
     },
     {
+      "name": "share",
+      "value": "分享"
+    },
+    {
       "name": "developer_list",
       "value": "开发者\n25-微-祝一铭\n25-计-李铭承\n25-少-杜思成"
     },
@@ -1021,12 +1037,8 @@
       "value": "少女祈祷中…"
     },
     {
-      "name": "password_incomplete1",
-      "value": "已保存，但你可能输入有误"
-    },
-    {
-      "name": "password_incomplete2",
-      "value": "╮(๑•́ ₃•̀๑)╭原因：学号格式不正确，或者密码没有包含数字或大小写字母，或者密码不是8~32位。"
+      "name": "password_incomplete",
+      "value": "已保存，但你可能输入有误。原因：学号格式不正确，或者密码没有包含数字或大小写字母，或者密码不是8~32位。"
     },
     {
       "name": "input_later",

@@ -49,6 +49,21 @@
       "name": "GetClassByName",
       "pageSourceFile": "src/main/ets/pages/GetClassByName.ets",
       "buildFunction": "GCBNBuilder"
+    },
+    {
+      "name": "MockPracticeList",
+      "pageSourceFile": "src/main/ets/pages/MockPracticeList.ets",
+      "buildFunction": "MPLBuilder"
+    },
+    {
+      "name": "MockPracticeMain",
+      "pageSourceFile": "src/main/ets/pages/MockPracticeMain.ets",
+      "buildFunction": "MPMBuilder"
+    },
+    {
+      "name": "CleanStorage",
+      "pageSourceFile": "src/main/ets/pages/CleanStorage.ets",
+      "buildFunction": "CleanStorageBuilder"
     }
   ]
 }

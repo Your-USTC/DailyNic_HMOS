@@ -22,6 +22,7 @@ export default struct PasswordDialog {
   private showDelButton: boolean = false;
   isFromSetting: boolean= true;
 
+  @Link refreshUsername: string;
   onConfirm: () => void = () => {};
 
   @State passwordState: boolean = false;
@@ -210,6 +211,8 @@ export default struct PasswordDialog {
               UnifiedPreferences.deleteSync(PASSWORD_KEY);
             else
               UnifiedPreferences.putSync(PASSWORD_KEY, accountInfoProvider.encryptPassword(this.inputPassword));
+            if (this.refreshUsername)
+              this.refreshUsername = this.inputUID;
 
             if (this.inputUID === '' || this.inputPassword === '') {
               this.getUIContext().getPromptAction().showToast({ message: $r('app.string.cannot_fill') });
@@ -221,11 +224,16 @@ export default struct PasswordDialog {
                 /[A-Z]/.test(this.inputPassword) && /\d/.test(this.inputPassword) && this.inputPassword.length <= 32)
               ) {
                 this.getUIContext().showAlertDialog({
-                  title: $r('app.string.password_incomplete1'),
-                  message: $r('app.string.password_incomplete2'),
+                  title: '╮(๑•́ ₃•̀๑)╭',
+                  message: $r('app.string.password_incomplete'),
                   autoCancel: true, gridCount: 4, alignment: DialogAlignment.Center, cancel: () => {},
-                  primaryButton: { value: $r('app.string.back'), action: () => {} },
-                  secondaryButton: { enabled: true, defaultFocus: true, style: DialogButtonStyle.HIGHLIGHT, value: $r('app.string.ok'),
+                  primaryButton: { value: $r('app.string.back'), action: () => {}, fontColor: presetColor[BackgroundImage.themeColor][2] },
+                  secondaryButton: {
+                    enabled: true,
+                    defaultFocus: true,
+                    style: DialogButtonStyle.HIGHLIGHT,
+                    backgroundColor: presetColor[BackgroundImage.themeColor][2],
+                    value: $r('app.string.ok'),
                     action: () => {
                       this.onConfirm();
                       this.controller.close();

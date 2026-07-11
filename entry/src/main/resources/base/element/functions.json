@@ -5,24 +5,12 @@
       "value": "空"
     },
     {
+      "name": "GeRenZhongXin",
+      "value": "个人中心"
+    },
+    {
       "name": "ZuiJinShiYong",
       "value": "最常访问"
-    },
-    {
-      "name": "XueXi",
-      "value": "课程与学习"
-    },
-    {
-      "name": "GongJu",
-      "value": "服务与工具"
-    },
-    {
-      "name": "XinXiJiShu",
-      "value": "信息技术"
-    },
-    {
-      "name": "XueXiao",
-      "value": "学校与管理"
     },
     {
       "name": "JiaoWuXiTong",
@@ -69,8 +57,8 @@
       "value": "国际交流"
     },
     {
-      "name": "DaWuShiYanYuYue",
-      "value": "大物实验预约"
+      "name": "DaWuShiYan",
+      "value": "大物实验"
     },
     {
       "name": "ZhuJiaoXiTong",
@@ -89,16 +77,8 @@
       "value": "课程资料"
     },
     {
-      "name": "DaWuGongJu",
-      "value": "大雾工具"
-    },
-    {
       "name": "QingChunKeDa",
       "value": "第二课堂"
-    },
-    {
-      "name": "QingChunKeDaPC",
-      "value": "第二课堂(PC)"
     },
     {
       "name": "YingXinWang",
@@ -129,6 +109,18 @@
       "value": "一卡通"
     },
     {
+      "name": "LLM",
+      "value": "LLM 公共服务平台"
+    },
+    {
+      "name": "SuanLiPingTai",
+      "value": "本科生算力平台"
+    },
+    {
+      "name": "LUG",
+      "value": "Linux 用户协会",
+    },
+    {
       "name": "WangLuoTong",
       "value": "网络通"
     },
@@ -153,12 +145,16 @@
       "value": "智慧门户"
     },
     {
-      "name": "XueXiTong",
-      "value": "学习通"
+      "name": "KeChengPingTai",
+      "value": "课程平台"
     },
     {
-      "name": "ZhiHuiShu",
-      "value": "智慧树"
+      "name": "JiKaoZiCe",
+      "value": "机考自测"
+    },
+    {
+      "name": "HuaZhuShangLv",
+      "value": "华住商旅"
     },
     {
       "name": "WangLuoZhuCeZhongXin",
@@ -239,10 +235,6 @@
     {
       "name": "YuanXiZhuanYe",
       "value": "院系专业"
-    },
-    {
-      "name": "QuanJingDiTu",
-      "value": "全景地图"
     },
     {
       "name": "XueGongYiTiHua",

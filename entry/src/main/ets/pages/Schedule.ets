@@ -10,6 +10,7 @@ import BackgroundImage, { presetColor } from '../utils/BgImageManager';
 import RenameDialog from '../view/RenameDialog';
 import { JSON } from '@kit.ArkTS';
 import { currentScheduleVersion, FULL_TIME_FORMAT } from '../constants/BasicConstants';
+import MessageDialog from '../view/MessageDialog';
 
 const criticalHeight: number = 32; // 紧凑模式临界值(vp)
 const classAndTeacher: number = 22; // 教室和教师占用高度
@@ -41,7 +42,7 @@ struct Schedule {
   @State thisWeekSchedule: ScheduleSources.classAttribute[] = [];
   @State conflictSchedule: ScheduleSources.classAttribute[] = [];
 
-
+  msgDialogController?: CustomDialogController;
   @State showXiuHint: boolean = false;
   @Builder xiuHintPopup() {
     Row() {
@@ -400,24 +401,18 @@ struct Schedule {
   @Builder ConflictClass() {
     Column() {
       Row() {
-        Text($r('app.string.conflict_class_detail_d', this.weekDisplayed))
-          .fontWeight(FontWeight.Bold)
-          .fontSize(24)
-          .layoutWeight(1)
-          .margin({ left: 8 });
-        Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
-          Image($r('app.media.questionmark_circle'))
-            .height(24)
-            .width(24)
-            .draggable(false)
+        Column() {
+          Text($r('app.string.conflict_class_detail_d', this.weekDisplayed))
+            .fontWeight(FontWeight.Bold)
+            .fontSize(20)
+            .width('100%')
+          Text($r('app.string.conflict_class_help'))
+            .fontSize(12)
+            .textOverflow({ overflow: TextOverflow.MARQUEE })
+            .width('100%')
         }
-        .width(42)
-        .height(42)
-        .margin({ right: 8 })
-        .onClick(() => {
-          this.showConflictClass = false;
-          this.pathStack.pushPath({ name: 'Help' });
-        })
+        .layoutWeight(1)
+        .margin({ left: 8 });
 
         Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
           Image($r('app.media.close'))
@@ -551,10 +546,10 @@ struct Schedule {
         Column() {
           Text($r('app.string.all_semesters'))
             .fontWeight(FontWeight.Bold)
-            .fontSize(22)
+            .fontSize(20)
             .width('100%')
           Text($r('app.string.all_semesters_intro'))
-            .fontSize(13)
+            .fontSize(12)
             .width('100%')
         }
         .layoutWeight(1)
@@ -686,40 +681,20 @@ struct Schedule {
                 .width(40)
                 .enabled(this.displayTerm !== index && this.defaultSemester !== index)
                 .onClick(() => {
-                  this.getUIContext().showAlertDialog({
-                    message: $r('app.string.delete_semester_or_not'),
-                    autoCancel: true,
-                    alignment: DialogAlignment.Center,
-                    gridCount: 4,
-                    primaryButton: {
-                      value: $r('app.string.cancel'),
-                      action: () => {}
-                    },
-                    secondaryButton: {
-                      enabled: true,
-                      defaultFocus: true,
-                      style: DialogButtonStyle.DEFAULT,
-                      fontColor: $r('app.color.red'),
-                      value: $r('app.string.ok'),
-                      action: () => {
+                  this.msgDialogController = new CustomDialogController({
+                    builder: MessageDialog({
+                      message: $r('app.string.delete_semester_or_not'),
+                      onConfirm: () => {
                         ScheduleManager.deleteSemester(index);
                         this.displayTerm = ScheduleManager.displaySemester;
                         this.defaultSemester = ScheduleManager.defaultSemester;
                         this.semesters = ScheduleManager.semesters;
                       }
-                    },
-                    cancel: () => {
-                      console.info('Closed callbacks');
-                    },
-                    onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                      if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                        dismissDialogAction.dismiss();
-                      }
-                      if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                        dismissDialogAction.dismiss();
-                      }
-                    }
+                    }),
+                    autoCancel: true,
+                    gridCount: 4
                   });
+                  this.msgDialogController.open();
                 })
               }
 
@@ -1111,11 +1086,12 @@ struct Schedule {
         })
 
         Column() {
-          Text($r('app.string.local_schedule'))
+          Text(this.displayName)
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .width('100%')
             .maxLines(1)
+            .margin({ bottom: 1 })
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .bindSheet($$this.showSheet, this.ClassDetailDialog(), {
               // 如果与 gridItem 绑定，会弹出很多个！
@@ -1137,43 +1113,22 @@ struct Schedule {
                 }
                 this.classInfo.timeSpan = tools.getContArray([this.rectifyTimeSpan]) as number[];
                 if (!areClassAttributesEqual(this.oriClassInfo, this.classInfo)) {
-                  this.getUIContext().showAlertDialog({
-                    title: $r('app.string.unsaved_change'),
-                    message: $r('app.string.back_to_schedule_or_not'),
+                  this.msgDialogController = new CustomDialogController({
+                    builder: MessageDialog({
+                      mainTitle: $r('app.string.unsaved_change'),
+                      message: $r('app.string.back_to_schedule_or_not'),
+                      onConfirm: () => DismissSheetAction.dismiss()
+                    }),
                     autoCancel: true,
-                    alignment: DialogAlignment.Center,
-                    gridCount: 4,
-                    primaryButton: {
-                      value: $r('app.string.cancel'),
-                      action: () => {
-                      }
-                    },
-                    secondaryButton: {
-                      enabled: true,
-                      defaultFocus: true,
-                      style: DialogButtonStyle.HIGHLIGHT,
-                      value: $r('app.string.ok'),
-                      action: () => {
-                        DismissSheetAction.dismiss();
-                      }
-                    },
-                    cancel: () => {
-                    },
-                    onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                      if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                        dismissDialogAction.dismiss();
-                      }
-                      if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                        dismissDialogAction.dismiss();
-                      }
-                    }
+                    gridCount: 4
                   });
+                  this.msgDialogController.open();
                 } else {
                   DismissSheetAction.dismiss();
                 }
               })
             })
-          Text(this.displayName)
+          Text($r('app.string.local_schedule_daily_nic'))
             .fontSize(12)
             .fontColor($r('app.color.transparent_text'))
             .width('100%')
@@ -1248,6 +1203,23 @@ struct Schedule {
           .id('week_of_term_span')
           .fontWeight(FontWeight.Bold)
           .fontSize(14)
+          .onClick(() => {
+            let totalWeekNum = this.semesters[this.displayTerm].totalWeekNum;
+            if (totalWeekNum === 0)
+              totalWeekNum = 20;
+            CalendarPickerDialog.show({
+              selected: new Date(this.weekStart),
+              start: new Date(this.semesters[this.displayTerm].beginTime),
+              end: new Date(this.semesters[this.displayTerm].beginTime + totalWeekNum * millisecondsPerWeek - 86400000),
+              onAccept: (value: Date) => {
+                value.setDate(value.getDate() - value.getDay());
+                value.setHours(0, 0, 0, 0);
+                this.weekStart = value.getTime();
+                this.weekDisplayed = (this.weekStart - this.semesters[this.displayTerm].beginTime) / millisecondsPerWeek + 1;
+                this.refreshGrid();
+              }
+            })
+          })
 
         Blank()
 
@@ -1268,6 +1240,19 @@ struct Schedule {
           .id('week_of_term_no')
           .fontWeight(FontWeight.Bold)
           .fontSize(14)
+          .onClick(() => {
+            this.getUIContext().showTextPickerDialog({
+              range: tools.getContArray([[1, 20]], true) as string[],
+              selected: this.weekDisplayed - 1,
+              canLoop: false,
+              onAccept: (value: TextPickerResult) => {
+                const toJump: number = Number(value.value);
+                this.weekStart = this.weekStart + millisecondsPerWeek * (toJump - this.weekDisplayed);
+                this.weekDisplayed = toJump;
+                this.refreshGrid();
+              }
+            });
+          })
 
         Image($r('app.media.arrow_right_circle'))
           .height(18)
@@ -1370,39 +1355,19 @@ struct Schedule {
           .width(42)
           .height(42)
           .onClick(() => {
-            this.getUIContext().showAlertDialog({
-              message: $r('app.string.delete_class_or_not'),
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              primaryButton: {
-                value: $r('app.string.cancel'),
-                action: () => {}
-              },
-              secondaryButton: {
-                enabled: true,
-                defaultFocus: true,
-                style: DialogButtonStyle.DEFAULT,
-                fontColor: $r('app.color.red'),
-                value: $r('app.string.ok'),
-                action: () => {
+            this.msgDialogController = new CustomDialogController({
+              builder: MessageDialog({
+                message: $r('app.string.delete_class_or_not'),
+                onConfirm: () => {
                   ScheduleManager.deleteClassFromSemester(this.displayTerm, this.oriClassInfo);
                   this.refreshGrid();
                   this.showSheet = false;
                 }
-              },
-              cancel: () => {
-                console.info('Closed callbacks');
-              },
-              onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                  dismissDialogAction.dismiss();
-                }
-                if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                  dismissDialogAction.dismiss();
-                }
-              }
+              }),
+              autoCancel: true,
+              gridCount: 4
             });
+            this.msgDialogController.open();
           })
 
           Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
@@ -1443,35 +1408,18 @@ struct Schedule {
           }
           this.classInfo.timeSpan = tools.getContArray([this.rectifyTimeSpan]) as number[];
           if (!areClassAttributesEqual(this.oriClassInfo, this.classInfo)) {
-            this.getUIContext().showAlertDialog({
-              title: $r('app.string.unsaved_change'),
-              message: $r('app.string.back_to_schedule_or_not'),
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              primaryButton: {
-                value: $r('app.string.cancel'),
-                action: () => {}
-              },
-              secondaryButton: {
-                enabled: true,
-                defaultFocus: true,
-                style: DialogButtonStyle.HIGHLIGHT,
-                value: $r('app.string.ok'),
-                action: () => {
+            this.msgDialogController = new CustomDialogController({
+              builder: MessageDialog({
+                mainTitle: $r('app.string.unsaved_change'),
+                message: $r('app.string.back_to_schedule_or_not'),
+                onConfirm: () => {
                   this.showSheet = false;
                 }
-              },
-              cancel: () => {},
-              onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                  dismissDialogAction.dismiss();
-                }
-                if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                  dismissDialogAction.dismiss();
-                }
-              }
+              }),
+              autoCancel: true,
+              gridCount: 4
             });
+            this.msgDialogController.open();
           } else {
             this.showSheet = false;
           }

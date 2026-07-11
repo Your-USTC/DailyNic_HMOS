@@ -1,19 +1,20 @@
 
-import { GridData } from '../constants/GridListDataSources';
+import { LinkSet, MultiLink } from '../constants/Links';
 import { LINK } from '../constants/Links';
 import * as FunctionOrder from '../utils/FunctionOrder';
 import * as tools from '../utils/tools';
 import BackgroundImage from '../utils/BgImageManager';
 import CustomClickDialog from './CustomClickDialog';
 import { Popup } from '@kit.ArkUI';
-import { webName, resetWebName } from './MultiPageMenu';
+import PageRouter from '../utils/PageRouter';
+import MessageDialog from './MessageDialog';
 
 @Component
 export default struct GridComponent {
-  @Prop gridData: GridData = new GridData('', []);
+  @Prop gridData: LinkSet = { title: '', set: [] };
   @State gridIndex: number = 0;
-  CustomClickCnt: CustomDialogController | undefined;
-  @Link copyMostUsedFunc: GridData
+  gridDialog: CustomDialogController | undefined;
+  @Link copyMostUsedFunc: LinkSet;
 
   pageInfo: NavPathStack = new NavPathStack();
   build() {
@@ -21,7 +22,7 @@ export default struct GridComponent {
       Row() {
         if (this.gridIndex === -1)
           Row({ space: 6 }) {
-            Text(this.gridData.groupName)
+            Text(this.gridData.title)
               .fontSize('20fp')
               .height('30vp')
               .fontWeight(FontWeight.Bold)
@@ -78,36 +79,19 @@ export default struct GridComponent {
             .height(36)
             .width(36)
             .onClick(() => {
-              this.getUIContext().showAlertDialog({
-                message: '你真的要清空「最常访问」吗？',
-                autoCancel: true,
-                alignment: DialogAlignment.Center,
-                gridCount: 4,
-                primaryButton: {
-                  value: $r('app.string.cancel'),
-                  action: () => {}
-                },
-                secondaryButton: {
-                  enabled: true,
-                  defaultFocus: true,
-                  style: DialogButtonStyle.DEFAULT,
-                  fontColor: $r('app.color.red'),
-                  value: $r('app.string.ok'),
-                  action: () => {
+              this.gridDialog = new CustomDialogController({
+                builder: MessageDialog({
+                  message: $r('app.string.delete_most_used_func_or_not'),
+                  onConfirm: () => {
                     FunctionOrder.resetFunc();
                     FunctionOrder.refreshFunc(); // 刷新点击次数显示
                     this.copyMostUsedFunc = FunctionOrder.mostUsedFunc;
                   }
-                },
-                onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                  if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                    dismissDialogAction.dismiss();
-                  }
-                  if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                    dismissDialogAction.dismiss();
-                  }
-                }
+                }),
+                autoCancel: true,
+                gridCount: 4
               });
+              this.gridDialog.open();
             })
           }
           .height(40)
@@ -125,7 +109,7 @@ export default struct GridComponent {
       .justifyContent(FlexAlign.Start)
 
       Grid() {
-        ForEach(this.gridData.gridItemList, (item: string, index: number) => { // index: 当前GridComponent的索引
+        ForEach(this.gridData.set, (item: MultiLink, index: number) => { // index: 当前GridComponent的索引
           GridItem() {
             Column() {
               Image(FunctionOrder.gIndex_to_pic(this.gridIndex, index))
@@ -133,7 +117,7 @@ export default struct GridComponent {
                 .width('40vp')
                 .height('40vp')
                 .draggable(false)
-              Text(item)
+              Text(item.title)
                 .fontSize('12fp')
                 .textAlign(TextAlign.Center)
                 .margin({ top: '4vp' })
@@ -156,7 +140,7 @@ export default struct GridComponent {
                 else {
                   let preName: string = FunctionOrder.order[index][0];
                   if (preName != undefined) {
-                    this.CustomClickCnt = new CustomDialogController({
+                    this.gridDialog = new CustomDialogController({
                       builder: CustomClickDialog({
                         gridIndex: Number(preName.split('.')[0]),
                         index: Number(preName.split('.')[1]),
@@ -165,17 +149,17 @@ export default struct GridComponent {
                       autoCancel: false,
                       gridCount: 4
                     });
-                    this.CustomClickCnt.open();
+                    this.gridDialog.open();
                   }
                 }
               }
               else {
-                this.CustomClickCnt = new CustomDialogController({
+                this.gridDialog = new CustomDialogController({
                   builder: CustomClickDialog({ gridIndex: this.gridIndex, index: index, copyMostUsedFunc: this.copyMostUsedFunc }),
                   autoCancel: false,
                   gridCount: 4
                 });
-                this.CustomClickCnt.open();
+                this.gridDialog.open();
               }
             })
           )
@@ -189,39 +173,26 @@ export default struct GridComponent {
                 });
               } else {
                 let preName: string = FunctionOrder.order[index][0];
-                if (preName != undefined) {
-                  webName.push(LINK.get(preName)?.title ?? 'blank');
-                  // 打开对应页面
-                  this.pageInfo.clear();
-                  this.pageInfo.pushPath({ name: "Webview", param: LINK.get(preName) });
-                  resetWebName(LINK.get(preName)?.title);
-
-                  FunctionOrder.recordClick(Number(preName.split('.')[0]), Number(preName.split('.')[1])); // 记录点击次数
-                  FunctionOrder.refreshFunc(); // 刷新点击次数显示
+                if (preName)
                   this.copyMostUsedFunc = FunctionOrder.mostUsedFunc;
-                }
               }
-            } else if (LINK.get(this.gridIndex.toString() + '.' + index.toString())?.url.toString() === undefined) { // 未设置对应网址
-              this.getUIContext().getPromptAction().showToast({
-                message: $r('app.string.under_construction'),
-                duration: 500
-              });
-            } else { // 已设置对应网址
-              const paramData = LINK.get(this.gridIndex.toString() + '.' + index.toString());
-              webName.push(paramData?.title ?? 'blank');
-              // 打开对应页面
-              this.pageInfo.clear();
-              this.pageInfo.pushPath({ name: "Webview", param: paramData });
-              resetWebName(paramData?.title);
-
-              FunctionOrder.recordClick(this.gridIndex, index); // 点击次数+1
-              FunctionOrder.refreshFunc(); // 刷新点击次数显示
-              this.copyMostUsedFunc = FunctionOrder.mostUsedFunc;
+            } else {
+              const paramData = LINK[this.gridIndex].set[index];
+              // const paramData = LINK.get(this.gridIndex.toString() + '.' + index.toString());
+              if (paramData){ // 已设置对应网址
+                PageRouter.openMultiLink(paramData, this.pageInfo, this.gridIndex, index);
+                this.copyMostUsedFunc = FunctionOrder.mostUsedFunc;
+              } else { // 未设置对应网址
+                this.getUIContext().getPromptAction().showToast({
+                  message: $r('app.string.under_construction'),
+                  duration: 500
+                });
+              }
             }
           })
         },(item:string,index:number)=>index+JSON.stringify(item))
       }
-      .padding('12vp')
+      .padding(12)
       .rowsGap('8vp')
       .scrollBar(BarState.Off)
       .columnsTemplate('repeat(auto-fit, 70)');

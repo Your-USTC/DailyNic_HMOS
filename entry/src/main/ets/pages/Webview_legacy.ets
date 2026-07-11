@@ -34,10 +34,13 @@ struct Webview {
   haveJumped: boolean = true;
   // @State infoProvider: accountInfoProvider = new accountInfoProvider();
   haveTriedLogin: boolean = false;
+
+  @State useless: string = '';
   dialogController: CustomDialogController = new CustomDialogController({
     builder: PasswordDialog({
       isFromSetting: false,
-      onConfirm: () => { this.webviewController.runJavaScript(fillInformationJS, (error, result) => {}); }
+      onConfirm: () => { this.webviewController.runJavaScript(fillInformationJS, (error, result) => {}); },
+      refreshUsername: this.useless
     }),
     autoCancel: true
   })
@@ -101,7 +104,7 @@ struct Webview {
             // fileIo.rmdirSync('/data/storage/el2/base/cache/web/Cookies');
             webview.WebCookieManager.clearAllCookiesSync();
             // webview.WebCookieManager.clearSessionCookieSync();
-            this.showMessage($r('app.string.wipe_cache_success'), 500);
+            this.showMessage($r('app.string.clear_success'), 500);
           } catch (error) {
             console.error(`rmdirSync ErrorCode: ${(error as BusinessError).code},  Message: ${(error as BusinessError).message}`);
           }
@@ -112,7 +115,7 @@ struct Webview {
           try {
             // 设置当前内存压力等级为适中，释放少量内存
             webview.WebviewController.trimMemoryByPressureLevel(webview.PressureLevel.MEMORY_PRESSURE_LEVEL_MODERATE);
-            this.showMessage($r('app.string.wipe_cache_success'), 500);
+            this.showMessage($r('app.string.clear_success'), 500);
           } catch (error) {
             console.error(`ErrorCode: ${(error as BusinessError).code},  Message: ${(error as BusinessError).message}`);
           }

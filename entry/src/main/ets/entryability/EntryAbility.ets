@@ -2,7 +2,6 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { router, window } from '@kit.ArkUI';
-import { deviceInfo } from '@kit.BasicServicesKit';
 
 import UnifiedPreferences from '../utils/UnifyPreference';
 

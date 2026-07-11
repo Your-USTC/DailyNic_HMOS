@@ -1,9 +1,8 @@
 
-import { application, common, contextConstant, Want } from '@kit.AbilityKit'
+import { common } from '@kit.AbilityKit'
 import { LengthUnit } from '@kit.ArkUI'
-import { fileIo, storageStatistics } from '@kit.CoreFileKit'
 
-import { GridData, otherGridDataList } from '../constants/GridListDataSources'
+import { GridData } from '../constants/Links'
 import { ListDataConstants } from '../constants/ListDataConstants'
 import * as ScheduleSources from '../constants/ScheduleSources'
 import SettingsData from '../constants/SettingsSources'
@@ -23,7 +22,12 @@ import ItemData from '../view/SettingsComponent'
 
 import display from '@ohos.display'
 import { WantAbility } from '../utils/WantAbility'
-import { currentAppVersion, currentScheduleVersion, deviceType } from '../constants/BasicConstants'
+import { currentAppVersion, initHostContext, deviceType, hostContext } from '../constants/BasicConstants'
+import { importNewTest } from '../utils/MockPractice/QuestionsManager'
+import { getAllTest, removeTest } from '../utils/MockPractice/TestManager'
+import { hdsMaterial, HdsNavigation, HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
+import accountInfoProvider from '../utils/Encryption'
+import { LinkSet, LINK } from '../constants/Links'
 
 // 滚动条参数
 enum ScrollPosition {
@@ -39,11 +43,13 @@ struct Index {
   private windowRect: display.Display = display.getDefaultDisplaySync();
 
   @State currentIndex: number = 0; // 当前标签索引 (从0开始), 初始值即为默认标签索引
-  private tabsController: TabsController = new TabsController();
+  private tabsController: HdsTabsController = new HdsTabsController();
 
+  @State displayUsername: string = accountInfoProvider.getUID();
   dialogController: CustomDialogController = new CustomDialogController({
     builder: PasswordDialog({
-      isFromSetting: true
+      isFromSetting: true,
+      refreshUsername: this.displayUsername
     }),
     autoCancel: false,
     gridCount: 4
@@ -96,13 +102,13 @@ struct Index {
   @State showExamDetail: boolean = UnifiedPreferences.getBoolSync('showExamDetail', true);
   @State webAutoDarkMode: boolean = UnifiedPreferences.getBoolSync('webAutoDarkMode', true);
   @State webBackPress: boolean = UnifiedPreferences.getBoolSync('webBackPress', true);
-
-  private context: Context = this.getUIContext().getHostContext() as common.UIAbilityContext;
   @State currentTime: Date = new Date();
 
   aboutToAppear(): void {
+    // 保存 hostContext
+    initHostContext(this.getUIContext().getHostContext() as common.UIAbilityContext);
     // 快捷方式跳转
-    this.getUIContext().getHostContext()?.eventHub.on('navigation', (path: string) => {
+    hostContext().eventHub.on('navigation', (path: string) => {
       let paths = this.pageInfo.getAllPathName();
       if (paths.slice().pop() === path) {
         return;
@@ -120,10 +126,10 @@ struct Index {
     this.checkedInToday = GeneratedDestructArray_1[2];
     this.checkInContent = this.checkedInToday ? GeneratedDestructArray_1[3] : '';
     this.refreshInfo();
+    // 初始化背景
+    BackgroundImage.init(hostContext());
     // 初始化日历
     WriteCalendar.initializeCalendar(this.getUIContext());
-    //初始化背景
-    BackgroundImage.init(this.context);
     // 首次启动提示
     if (UnifiedPreferences.getBoolSync('InitialLaunch', true)) {
       this.getUIContext().getRouter().pushUrl({ url: 'pages/Declaration' })
@@ -214,64 +220,10 @@ struct Index {
   }
 
   @State copyMostUsedFunc: GridData = FunctionOrder.mostUsedFunc;
-  onPageShow(): void {
-    storageStatistics.getCurrentBundleStats().then((dataSize: storageStatistics.BundleStats) => {
-      this.cacheSize = tools.formatBytes(dataSize.cacheSize, 2, false);
-    });
-  }
 
   /**
    * 全局资源: 设置
    */
-  @State cacheSize: string = '计算中…'; // 未初始化时
-  clearCache = async () => {
-    this.cacheSize = '清理中…'
-    let moduleContext: common.Context;
-    moduleContext = await application.createModuleContext(this.context, 'entry');
-    // 缓存路径/data/storage/el2/base/cache
-    // 缓存路径/data/storage/el2/base/cache/web
-    // 缓存路径/data/storage/el2/base/haps/entry/cache
-    let paths: Array<string> = [moduleContext.cacheDir, moduleContext.cacheDir + '/web', this.context.cacheDir];
-    // 缓存路径/data/storage/el1/base/cache
-    moduleContext.area = contextConstant.AreaMode.EL1;
-    paths.push(moduleContext.cacheDir);
-    // 缓存路径/data/storage/el1/base/haps/entry/cache
-    this.context.area = contextConstant.AreaMode.EL1;
-    paths.push(this.context.cacheDir);
-    this.context.area = contextConstant.AreaMode.EL2;
-
-    // 遍历paths数组，彻底删除每个文件夹下的缓存数据
-    for (let i = 0; i < paths.length; i++) {
-      let path = paths[i];
-      fileIo.listFile(path).then((filenames) => {
-        for (let j = 0; j < filenames.length; j++) {
-          let dirPath = path + '/' + filenames[j];
-          if (dirPath === '/data/storage/el2/base/cache/web' || dirPath === '/data/storage/el2/base/cache/web/Cookies')
-            continue;
-          // 判断是否为文件夹
-          let isDirectory: boolean = false;
-          try {
-            isDirectory = fileIo.statSync(dirPath).isDirectory();
-          } catch (err) {
-            console.error(`remove file failed with error message: ${err.message}`);
-          }
-          if (isDirectory) {
-            fileIo.rmdirSync(dirPath);
-          } else {
-            fileIo.unlink(dirPath).catch((err: Error) => {
-              console.error(`remove file failed with error message: ${err.message}`);
-            });
-          }
-        }
-        // 清理完成后再次计算
-        if (i === paths.length - 1)
-          storageStatistics.getCurrentBundleStats().then((dataSize: storageStatistics.BundleStats) => {
-            this.cacheSize = tools.formatBytes(dataSize.cacheSize, 2, false);
-        });
-      });
-    }
-  }
-
   @Builder settingCell(item: ItemData) {
     Row() {
       Row() {
@@ -282,11 +234,6 @@ struct Index {
         Text(item.title)
           .fontSize('16fp')
           .fontColor($r('app.color.normal_text'))
-        if (item.id === 12) { // 清理缓存
-          Text(' (' + this.cacheSize + ')')
-            .fontSize('16fp')
-            .fontColor($r('app.color.normal_text'))
-        }
       }
 
       if (item.others === undefined) {
@@ -390,6 +337,30 @@ struct Index {
    */
   @Builder pageStart() {
     List({ space: 10 }) {
+      ListItem()
+      {
+        Row() {
+          Button('import')
+            .onClick(() => {
+              this.pageInfo.pushPath({ name: 'MockPracticeList' });
+            })
+          Button('check')
+            .onClick(() => {
+              console.log('excel check');
+              getAllTest();
+            })
+          Button('delete')
+            .onClick(() => {
+              console.log('excel delete');
+              const testList = getAllTest();
+              if (testList.length > 0)
+                removeTest(testList[0].uuid);
+            })
+        }
+      }
+      .height(50)
+      .width('100%')
+
       // 每日签到
       if (this.showCheckIn) {
         ListItem() {
@@ -751,64 +722,52 @@ struct Index {
               .margin({ top: 12, bottom: 12 });
             } else {
               ForEach(this.exams, (singleExam: examAttribute, index: number) => {
-                Row() {
-                  if (this.currentTime.getTime() < singleExam.beginTimeStamp) {
-                    Flex({ wrap: FlexWrap.Wrap, alignItems: ItemAlign.End }) {
-                      if (singleExam.beginTimeStamp - this.currentTime.getTime() > 86400000) {
-                        Text() {
-                          Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 0)
-                            .toString())
-                            .fontSize(36)
-                          Span($r('app.string.day'))
-                            .fontSize(18)
-                        }
-                        .fontWeight(FontWeight.Bold)
-                        .fontColor($r('app.color.green'))
-                      }
-
-                      Text() {
-                        Span(Number((tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 1)
-                          + tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 2) / 60).toExponential(1)).toString())
-                          .fontSize(28)
-                        Span($r('app.string.hour'))
-                          .fontColor($r('app.color.hour'))
-                          .fontSize(14)
-                      }
+                Column() {
+                  Row() {
+                    Text(singleExam.name)
+                      .layoutWeight(1)
+                      .fontSize(18)
                       .fontWeight(FontWeight.Bold)
-                      .fontColor($r('app.color.hour'))
-                    }
-                    .width('30%');
-                  } else {
-                    Text($r('app.string.exam_processing'))
-                      .fontSize(20)
+                      .maxLines(2)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .margin({ right: 5 })
+
+                    if (this.currentTime.getTime() < singleExam.beginTimeStamp) {
+                      Text() {
+                        Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 0).toString())
+                          .fontColor($r('app.color.green'))
+                        Span(':')
+                        Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 1).toString())
+                          .fontColor($r('app.color.hour'))
+                        Span(':')
+                        Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 2).toString())
+                          .fontColor($r('app.color.minute'))
+                      }
+                      .fontSize(22)
                       .fontColor($r('app.color.transparent_text'))
-                      .width('30%')
-                      .textAlign(TextAlign.Start);
-                  }
-
-                  Column() {
-                    Flex({ wrap: FlexWrap.Wrap, alignItems: ItemAlign.End }) {
-                      Text(singleExam.name)
-                        .fontSize(18)
-                        .fontWeight(FontWeight.Bold)
-                        .maxLines(2)
-                        .textOverflow({ overflow: TextOverflow.Ellipsis })
-                        .margin({ right: 5 })
-                      Text(singleExam.type)
-                        .fontSize(16)
+                    } else {
+                      Text($r('app.string.exam_processing'))
+                        .layoutWeight(1)
+                        .fontSize(22)
+                        .fontColor($r('app.color.transparent_text'))
+                        .textAlign(TextAlign.Start);
                     }
-                    .margin({ bottom: 5 })
-
-                    Text('\udb80\uddb8 ' + singleExam.campus + singleExam.building + singleExam.classroom)
-                      .visibility(singleExam.campus + singleExam.building + singleExam.classroom === '' ? Visibility.None : Visibility.Visible);
-                    Text('\udb80\udfdc ' + singleExam.date)
-                      .visibility(singleExam.date === '' ? Visibility.None : Visibility.Visible);
                   }
-                  .width('70%')
-                  .alignItems(HorizontalAlign.Start);
+                  .alignItems(VerticalAlign.Top)
+                  .width('100%')
+
+                  Text('\udb81\ude5a ' + singleExam.type)
+                    .fontSize(15)
+                  Text('\udb80\udfdc ' + singleExam.date)
+                    .fontSize(15)
+                    .visibility(singleExam.date === '' ? Visibility.None : Visibility.Visible);
+                  Text('\udb80\uddb8 ' + singleExam.campus + singleExam.building + singleExam.classroom)
+                    .fontSize(15)
+                    .visibility(singleExam.campus + singleExam.building + singleExam.classroom === '' ? Visibility.None : Visibility.Visible);
                 }
-                .padding({ left: 15, right: 5 })
+                .padding({ left: 15, right: 15 })
                 .margin({ top: 7, bottom: 7 })
+                .alignItems(HorizontalAlign.Start)
                 .borderRadius(20);
 
                 if (index < this.exams.length - 1) {
@@ -830,7 +789,7 @@ struct Index {
           .fontColor($r('app.color.transparent_text'))
           .fontSize(12)
       }
-      .margin({ bottom: 13 })
+      .margin({ bottom: 87 })
     }
     .width('100%')
     .height('100%')
@@ -853,7 +812,7 @@ struct Index {
           // 常用区下面的所有功能区 GridComponent
           this.listBuilder();
           List({ scroller: this.scrollerForList }) {
-            ForEach(otherGridDataList, (item: GridData, index: number) => {
+            ForEach(LINK, (item: LinkSet, index: number) => {
               GridComponent({
                 gridData: item,
                 gridIndex: index,
@@ -902,6 +861,7 @@ struct Index {
       .width('100%')
       .height('100%')
       .edgeEffect(EdgeEffect.None)
+      .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
       .onWillScroll((yOffset: number) => {
         if (!((this.scrollPosition === ScrollPosition.start && yOffset < 0) || (this.scrollPosition === ScrollPosition.end && yOffset > 0))) {
           this.scrollPosition = ScrollPosition.center;
@@ -934,6 +894,47 @@ struct Index {
    */
   @Builder pageSettings() {
     List({ space: 12 }) {
+      ListItem() {
+        // new ItemData(0, $r('app.string.set_account_info'), $r('app.media.key_horizontal'))
+        Row({ space: 6 }) {
+          Image($r('app.media.nic'))
+            .width(60)
+            .height(60)
+            .borderRadius(30)
+            .autoResize(true)
+          Text(this.displayUsername || $r('app.string.welcome_to_your_ustc'))
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .layoutWeight(1)
+          Button({ buttonStyle: ButtonStyleMode.NORMAL, type: ButtonType.Circle }) {
+            SymbolGlyph($r('sys.symbol.key'))
+              .fontSize(20)
+          }
+          .width(36)
+          .height(36)
+          .onClick(() => this.dialogController.open())
+
+          Button({ buttonStyle: ButtonStyleMode.NORMAL, type: ButtonType.Circle }) {
+            SymbolGlyph($r('sys.symbol.person'))
+              .fontSize(20)
+          }
+          .width(36)
+          .height(36)
+          .onClick(() => {
+            this.pageInfo.clear();
+            this.pageInfo.pushPath({ name: "Webview", param: {
+              title: $r('app.string.GeRenZhongXin'),
+              url: 'https://id.ustc.edu.cn/gate/cas-success/personal-center-home-page' } as Link });
+          })
+        }
+        .width('100%')
+        .padding(12)
+      }
+      .width('100%')
+      .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : undefined)
+      .backgroundBlurStyle(BackgroundImage.blurLevel)
+      .borderRadius(20)
+
       ForEach(SettingsData.getSettingListData(), (item: ItemData[], _index: number) => {
         ListItemGroup() {
           ForEach(item, (cell: ItemData, _cellIndex) => {
@@ -941,7 +942,7 @@ struct Index {
               this.settingCell(cell)
             }
             .height('48vp')
-            .onClick(() => this.settingAction(cell))
+            .onClick(() => this.settingAction(cell.id))
           })
         }
         .divider({
@@ -955,23 +956,18 @@ struct Index {
         .borderRadius(20)
 
       }/*, (item: ItemData) => JSON.stringify(item)*/)
-
-      ListItem().height(50)
     }
     .height('100%')
     .width('100%')
     .padding({ left: 12, right: 12 })
     .margin({ top: 8 })
     .scrollBar(BarState.Auto)
-    .overlay(this.settingExitButton(), { align: Alignment.Bottom })
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+    .contentEndOffset(80)
   }
 
-  settingAction(cell: ItemData) {
-    switch (cell.id) { // 根据 cell.id 区分设置项
-      case 0:
-        this.dialogController.open();
-        break;
+  settingAction(cellID: number) {
+    switch (cellID) { // 根据 cell.id 区分设置项
       case 1:
       case 2:
       case 3:
@@ -1029,7 +1025,10 @@ struct Index {
         break;
 
       case 12:
-        this.clearCache();
+        if (this.pageInfo.popToName('CleanStorage') === -1) {
+          this.pageInfo.clear();
+          this.pageInfo.pushPath({ name: 'CleanStorage' });
+        }
         break;
 
       case 13:
@@ -1048,57 +1047,13 @@ struct Index {
         }
         break;
 
-      case 15:
-        // 进入恢复模式
-        UnifiedPreferences.putSync('RecoveryMode', true);
-        let applicationContext = (this.getUIContext().getHostContext() as common.UIAbilityContext).getApplicationContext();
-        let want: Want = {
-          bundleName: 'com.nic.dailynic',
-          abilityName: 'EntryAbility'
-        };
-        try {
-          applicationContext.restartApp(want);
-        } catch (error) {
-          console.error(`restartApp fail, error: ${JSON.stringify(error)}`);
-          if (error.code === 16000064) {
-            const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-            context.terminateSelf((err) => {
-              if (!err) {
-                context.getApplicationContext().killAllProcesses().catch((error: Error) => {
-                  console.error(`Quitting ERROR: [${error.name}] ${error.message}`);
-                })
-              }
-            });
-          }
-        }
-        break;
+      case 15: // 退出
+        WantAbility.quit(hostContext());
 
       default:
         this.showMessage($r('app.string.under_construction'));
         break;
     }
-  }
-
-  @Builder settingExitButton(){
-    Column() {
-      Button($r('app.string.exit_app'), { type: ButtonType.Capsule })
-        .buttonStyle(ButtonStyleMode.NORMAL)
-        .fontColor(Color.Red)
-        .backgroundColor($r('app.color.normal_background_transparent'))
-        .backgroundBlurStyle(BlurStyle.BACKGROUND_REGULAR, {
-          colorMode: ThemeColorMode.LIGHT,
-          adaptiveColor: AdaptiveColor.DEFAULT,
-          scale: 0.1
-        })
-        .width('100%')
-        .margin({ bottom: 15 })
-        .onClick(() => {
-          WantAbility.quit(this.getUIContext().getHostContext() as common.UIAbilityContext);
-        })
-    }
-    .width('80%')
-    .justifyContent(FlexAlign.End)
-    .hitTestBehavior(HitTestMode.Transparent);
   }
 
   /**
@@ -1116,8 +1071,8 @@ struct Index {
         .autoResize(true)
         .opacity(BackgroundImage.brightness)
 
-      Navigation(this.pageInfo) {
-        Tabs({ barPosition: BarPosition.End, controller: this.tabsController }) {
+      HdsNavigation(this.pageInfo) {
+        HdsTabs({ controller: this.tabsController }) {
           /**
            * Tab: 首页
            */
@@ -1153,21 +1108,24 @@ struct Index {
           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
 
         }
-        .barBackgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.shaded_background' + BackgroundImage.themeColor.toString()) : undefined)
-        .barBackgroundBlurStyle(BackgroundImage.blurLevel)
-        .barHeight('auto')
-        .barWidth('100%')
         .vertical(false)
         .barPosition(BarPosition.End)
-        .barMode(BarMode.Fixed)
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
         .onAnimationStart((_index: number, targetIndex: number) => {
           this.currentIndex = targetIndex;
         })
+        .barOverlap(true)
+        .barFloatingStyle({
+          barBottomMargin: 5,
+          systemMaterialEffect: {
+            materialType: hdsMaterial.MaterialType.ADAPTIVE,
+            materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+          }
+        })
       }
       .enableDragBar(true)
       .navBarWidth('360vp')
-      .navBarWidthRange(['336vp', '50%'])
+      .navBarWidthRange({ minWidth: '336vp', maxWidth: '50%' })
       .hideTitleBar(true)
       .hideToolBar(true)
       .mode(UnifiedPreferences.getNumberSync('AdaptSplit', NavigationMode.Auto))

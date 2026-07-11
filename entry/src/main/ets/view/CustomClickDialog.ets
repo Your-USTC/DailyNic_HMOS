@@ -2,7 +2,7 @@
 import { CounterComponent, CounterType } from '@kit.ArkUI';
 import { customizeClick, gIndex_to_pic } from '../utils/FunctionOrder';
 import UnifiedPreferences from '../utils/UnifyPreference';
-import { GridData, otherGridDataList } from '../constants/GridListDataSources';
+import { GridData } from '../constants/Links';
 import { refreshFunc, mostUsedFunc } from '../utils/FunctionOrder';
 import { presetColor } from '../utils/BgImageManager';
 import BackgroundImage from '../utils/BgImageManager';

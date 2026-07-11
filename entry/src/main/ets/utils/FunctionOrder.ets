@@ -1,6 +1,5 @@
 
-import { GridData, eachGridNum, totalGridNum } from '../constants/GridListDataSources';
-import { index_to_pic } from '../constants/GridListIcons';
+import { LinkAddress } from '../constants/Links';
 import { LINK } from '../constants/Links'
 import UnifiedPreferences from './UnifyPreference';
 
