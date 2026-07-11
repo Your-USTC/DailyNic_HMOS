@@ -1,6 +1,5 @@
 import { LinkAddress, LinkSet, MultiLink, SimpleLink } from "../constants/Links"
 import { LINK } from "../constants/Links"
-import { pushRedirect } from '../utils/PageRouter';
 
 export let webName: ResourceStr[] = [];
 
@@ -16,6 +15,7 @@ export function resetWebName(title?: ResourceStr) {
     ForEach(urls, (item: LinkAddress, index: number) => {
       MenuItem({ content: item.subtitle })
         .onClick(() => {
+          webName.push(title);
           if (item.notUrl) {
             pageInfo.pushPath({ name: item.url as string });
           } else {
@@ -32,6 +32,7 @@ export function resetWebName(title?: ResourceStr) {
       if (item.url.length === 1) {
         MenuItem({ content: item.title })
           .onClick(() => {
+            webName.push(item.title);
             if (item.url[0].notUrl) {
               pageInfo.pushPath({ name: item.url[0].url as string });
             } else {

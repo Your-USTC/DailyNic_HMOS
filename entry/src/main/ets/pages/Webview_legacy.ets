@@ -10,7 +10,9 @@ import accountInfoProvider from '../utils/Encryption';
 import PasswordDialog from '../view/PasswordDialog';
 import BackgroundImage from '../utils/BgImageManager';
 import { WantAbility } from '../utils/WantAbility'
-import { deviceType } from '../constants/BasicConstants'
+import { deviceType, hostContext } from '../constants/BasicConstants'
+import { systemShare } from '@kit.ShareKit'
+import { uniformTypeDescriptor } from '@kit.ArkData'
 
 const desktopUrl: string[] = ['https://young.ustc.edu.cn/login'] // 需要默认访问桌面版站点时使用
 const autoJumpUrl: string[] = ['https://jw.ustc.edu.cn/for-std/course-table', 'https://jw.ustc.edu.cn/for-std/exam-arrange', 'https://jw.ustc.edu.cn/for-std/grade/sheet'];
@@ -97,17 +99,41 @@ struct Webview {
           )
         )
 
-      MenuItem({ content: $r('app.string.wipe_cookie'), startIcon: $r('app.media.remove_cookie') })
+      MenuItem({ content: $r('app.string.share'), startIcon: $r('app.media.share') })
         .onClick(() => {
-          try {
-            // this.webviewController.removeCache(true);
-            // fileIo.rmdirSync('/data/storage/el2/base/cache/web/Cookies');
-            webview.WebCookieManager.clearAllCookiesSync();
-            // webview.WebCookieManager.clearSessionCookieSync();
-            this.showMessage($r('app.string.clear_success'), 500);
-          } catch (error) {
-            console.error(`rmdirSync ErrorCode: ${(error as BusinessError).code},  Message: ${(error as BusinessError).message}`);
+          const favicon = this.webviewController.getFavicon();
+          const originSize = favicon.getImageInfoSync().size;
+          const magnification = Math.min(50 / originSize.height, 50 / originSize.width);
+          if (magnification < 1) {
+            favicon.scaleSync(magnification, magnification);
           }
+          const readBuffer = new Uint8Array(favicon.getPixelBytesNumber());
+          favicon.readPixelsToBufferSync(readBuffer);
+          const webTitle = this.webviewController.getTitle();
+          const webUrl = this.webviewController.getUrl();
+          const shareData = new systemShare.SharedData({
+            utd: uniformTypeDescriptor.UniformDataType.HYPERLINK,
+            content: webUrl,
+            title: webTitle,
+            thumbnail: readBuffer,
+            description: '分享链接'
+          });
+          shareData.addRecord({
+            utd: uniformTypeDescriptor.UniformDataType.TEXT,
+            content: `我通过妮可之记向你分享了一个网址：[${webTitle}](${webUrl})`,
+            title: webTitle,
+            thumbnail: readBuffer,
+            description: '分享链接'
+          });
+          const shareController = new systemShare.ShareController(shareData);
+          shareController.show(hostContext(), {
+            selectionMode: systemShare.SelectionMode.SINGLE,
+            previewMode: systemShare.SharePreviewMode.DETAIL,
+          }).then(() => {
+            console.info('ShareController show success.');
+          }).catch((error: BusinessError) => {
+            console.error(`ShareController show error. code: ${error.code}, message: ${error.message}`);
+          });
         })
 
       MenuItem({ content: $r('app.string.trim_memory'), startIcon: $r('app.media.storage') })
@@ -275,7 +301,7 @@ struct Webview {
             if (event) {
               let uri: string = event.data.getRequestUrl();
               if (uri.startsWith('mailto:')) {
-                WantAbility.SendEmail(this.getUIContext().getHostContext() as common.UIAbilityContext, uri);
+                WantAbility.SendEmail(hostContext(), uri);
                 return true;
               } else if (uri.indexOf('tel:') === 0) {
                 WantAbility.MakeCall(uri.substring(4));
@@ -356,7 +382,7 @@ struct Webview {
                           eachDownloadPercent.clear();
                           this.downloadItemTotal = 0;
                           try {
-                            (this.getUIContext().getHostContext() as common.UIAbilityContext).openLink('filemanager://openDirectory', { parameters: { 'fileUri': '' } });
+                            hostContext().openLink('filemanager://openDirectory', { parameters: { 'fileUri': '' } });
                           } catch (paramError) {
                             console.error(`Failed to start link. Code is ${paramError.code}, message is ${paramError.message}`);
                           }

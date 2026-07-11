@@ -63,13 +63,13 @@ export struct linkPickerDialog {
             .fontWeight(FontWeight.Bold)
           Text(item.subtitle)
             .layoutWeight(1)
-            .onClick(() => {
-              pushRedirect(this.pageInfo, item, LINK[this.gridIndex].set[this.index].title as string);
-              this.controller.close();
-            })
         }
         .width('100%')
         .height(40)
+        .onClick(() => {
+          pushRedirect(this.pageInfo, item, LINK[this.gridIndex].set[this.index].title as string);
+          this.controller.close();
+        })
 
         if (index < LINK[this.gridIndex].set[this.index].url.length - 1)
           Divider()

@@ -1046,7 +1046,7 @@ struct Index {
         .autoResize(true)
         .opacity(BackgroundImage.brightness)
 
-      HdsNavigation(this.pageInfo) {
+      Navigation(this.pageInfo) {
         HdsTabs({ controller: this.tabsController }) {
           /**
            * Tab: 首页
@@ -1093,14 +1093,14 @@ struct Index {
         .barFloatingStyle({
           barBottomMargin: 5,
           systemMaterialEffect: {
-            materialType: hdsMaterial.MaterialType.ADAPTIVE,
-            materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+            materialType: hdsMaterial.MaterialType.IMMERSIVE,
+            materialLevel: hdsMaterial.MaterialLevel.EXQUISITE
           }
         })
       }
       .enableDragBar(true)
       .navBarWidth('360vp')
-      .navBarWidthRange({ minWidth: '336vp', maxWidth: '50%' })
+      .navBarWidthRange(['336vp', '50%'])
       .hideTitleBar(true)
       .hideToolBar(true)
       .mode(UnifiedPreferences.getNumberSync('AdaptSplit', NavigationMode.Auto))
