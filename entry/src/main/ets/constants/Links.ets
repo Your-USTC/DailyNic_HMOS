@@ -62,7 +62,8 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.KeChengPingTai'), icon: $r('app.media.KeChengPingTai'), url: [
       { url: 'https://onlineweb.zhihuishu.com', subtitle: '智慧树' },
       { url: 'https://i.chaoxing.com', subtitle: '学习通' },
-      { url: 'https://www.icourse163.org/university/USTC#/c', subtitle: '慕课' }]},
+      { url: 'https://www.icourse163.org/university/USTC#/c', subtitle: '慕课' },
+      { url: 'https://wsdx.ustc.edu.cn', subtitle: '网上党校' }]},
     { title: $r('app.string.JiKaoZiCe'), icon: $r('app.media.JiKaoZiCe'), url: [
       { url: 'MockPracticeList', subtitle: '本地答题', notUrl: true },
       { url: 'https://ti.u5tc.cn/', subtitle: 'vitx 答题' },
@@ -118,16 +119,14 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.XiaoYuanBanChe'), url: [{ url: 'https://weixine.ustc.edu.cn/ustcqy/mobile/busTimetable_gov' }], icon: $r('app.media.XiaoYuanBanChe') },
     { title: $r('app.string.QunLiaoHuiZong'), icon: $r('app.media.QunLiaoHuiZong'), url: [
       { url: 'https://docs.qq.com/sheet/DZHZ0b2lVZmFMenFw', subtitle: '科大各类群汇总'},
-      { url: 'https://ustcgroup.pages.dev/', subtitle: 'USTC 群聊信息汇总'}
-    ]},
+      { url: 'https://ustcgroup.pages.dev/', subtitle: 'USTC 群聊信息汇总'}]},
     { title: $r('app.string.YingJuGouPiao'), url: [{ url: "https://ghticket.ustc.edu.cn" }], icon: $r('app.media.YingJuGouPiao') },
     { title: $r('app.string.BaoXiuDaTing'), url: [{ url: 'https://xsfw.ustc.edu.cn' }], icon: $r('app.media.BaoXiuDaTing') },
     { title: $r('app.string.XiaoYiYuan'), url: [{ url: 'https://hospital.ustc.edu.cn/main.htm' }], icon: $r('app.media.XiaoYiYuan') },
     { title: $r('app.string.HuaZhuShangLv'), url: [{ url: 'https://i.ustc.edu.cn/page/mobile/huazhu' }], icon: $r('app.media.HuaZhuShangLv') },
     { title: $r('app.string.XiaoYuanDiTu'), icon: $r('app.media.XiaoYuanDiTu'), url: [
       { url: 'https://map.ustc.edu.cn/m', subtitle: '二维地图' },
-      { url: 'https://vr.shouxi360.com/c/vyS6HSJjeej.html', subtitle: '全景地图' }
-    ]},
+      { url: 'https://vr.shouxi360.com/c/vyS6HSJjeej.html', subtitle: '全景地图' }]},
     { title: $r('app.string.XueShengYiBao'), url: [{ url: 'https://xsybxt.ustc.edu.cn' }], icon: $r('app.media.XueShengYiBao') },
     { title: $r('app.string.Nan7JiShi'), url: [{ url: 'https://nan7market.com' }], icon: $r('app.media.Nan7JiShi') },
     { title: $r('app.string.Nan7LunTan'), url: [{ url: 'https://ustcforum.com' }], icon: $r('app.media.Nan7LunTan') },

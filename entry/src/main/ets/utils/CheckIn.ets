@@ -75,17 +75,45 @@ export class CheckInTools {
   }
 
   static getRandomContent(): number {
-    const randomItem = (list: number[]) => list[Math.floor(Math.random() * list.length)];
+    // 根据当前时间选择对应时间段索引列表
     const hour = new Date().getHours();
+    let timeIndices: number[];
     if (hour < 5) {
-      return randomItem(CheckInTools.TIME_TO_INDEX[0]);
+      timeIndices = CheckInTools.TIME_TO_INDEX[0];
     } else if (hour < 10) {
-      return randomItem(CheckInTools.TIME_TO_INDEX[1]);
+      timeIndices = CheckInTools.TIME_TO_INDEX[1];
     } else if (hour < 19) {
-      return randomItem(CheckInTools.TIME_TO_INDEX[2]);
+      timeIndices = CheckInTools.TIME_TO_INDEX[2];
     } else {
-      return randomItem(CheckInTools.TIME_TO_INDEX[3]);
+      timeIndices = CheckInTools.TIME_TO_INDEX[3];
     }
+
+    // 获取当前收集状态（boolean[]）
+    const collection = CheckInTools.getCollectionStatus();
+
+    // 设置权重（未收集权重远大于已收集）
+    const WEIGHT_UNCOLLECTED = 5;
+    const WEIGHT_COLLECTED = 1;
+
+    // 计算总权重并构建权重数组
+    const weights: number[] = [];
+    let totalWeight = 0;
+    for (const idx of timeIndices) {
+      const weight = collection[idx] ? WEIGHT_COLLECTED : WEIGHT_UNCOLLECTED;
+      weights.push(weight);
+      totalWeight += weight;
+    }
+
+    // 加权随机选择
+    let random = Math.random() * totalWeight;
+    for (let i = 0; i < timeIndices.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return timeIndices[i];
+      }
+    }
+    // fallback（理论上不会执行到这里）
+    return timeIndices[timeIndices.length - 1];
   }
 
   static loadCheckInOnStartup(): [number, number, boolean, string] {
