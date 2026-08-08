@@ -1,7 +1,8 @@
-import BackgroundImage from '../utils/BgImageManager';
-import { testAttribute } from '../utils/MockPractice/constants';
-import { importNewTest } from '../utils/MockPractice/QuestionsManager';
-import { getAllTest } from '../utils/MockPractice/TestManager';
+import BackgroundImage from '../../utils/BgImageManager';
+import { answerStore } from '../../utils/MockPractice/AnswerSessionManager';
+import { fullID, testAttribute } from '../../utils/MockPractice/constants';
+import { importNewTest } from '../../utils/MockPractice/QuestionsManager';
+import { getAllTest, removeTest } from '../../utils/MockPractice/TestManager';
 
 
 @Builder
@@ -15,6 +16,15 @@ struct MockPracticeList {
   @State practiceList: testAttribute[] = getAllTest();
 
   menuItems: Array<NavigationMenuItem> = [
+    {
+      value: 'delete',
+      icon: $r('app.media.trash_red'),
+      action: () => {
+        const testList = getAllTest();
+        if (testList.length > 0)
+          removeTest(testList[0].uuid);
+      }
+    },
     {
       value: 'import',
       icon: $r('app.media.import'),
@@ -41,7 +51,8 @@ struct MockPracticeList {
                 .fontColor($r('app.color.transparent_text'))
             }
             .onClick(() => {
-              this.pathStack.pushPath({ name: "MockPracticeMain" })
+              const sessionId = answerStore.create(singlePractice.uuid, 'ordered', false);
+              this.pathStack.pushPath({ name: "MockPracticeMain", param: { name: singlePractice.name, test: singlePractice.uuid, answer: sessionId } as fullID });
             })
           }
           .width('100%')

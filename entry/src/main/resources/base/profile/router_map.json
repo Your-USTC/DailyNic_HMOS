@@ -52,12 +52,12 @@
     },
     {
       "name": "MockPracticeList",
-      "pageSourceFile": "src/main/ets/pages/MockPracticeList.ets",
+      "pageSourceFile": "src/main/ets/pages/MockPractice/TestList.ets",
       "buildFunction": "MPLBuilder"
     },
     {
       "name": "MockPracticeMain",
-      "pageSourceFile": "src/main/ets/pages/MockPracticeMain.ets",
+      "pageSourceFile": "src/main/ets/pages/MockPractice/OnAnswering.ets",
       "buildFunction": "MPMBuilder"
     },
     {

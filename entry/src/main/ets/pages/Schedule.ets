@@ -54,10 +54,27 @@ struct Schedule {
           text: $r('app.string.next_hint'),
           action: () => {
             this.showXiuHint = false;
-            this.showPinchHint = true;
+            this.showCalendarHint = true;
           }
         }]
       })}
+  }
+  @State showCalendarHint: boolean = false;
+  @Builder calendarHintPopup() {
+    Row() {
+      Popup({
+        icon: { image: $r('app.media.lightbulb') },
+        message: { text: $r('app.string.quick_jump_tp') },
+        showClose: false,
+        buttons: [{
+          text: $r('app.string.next_hint'),
+          action: () => {
+            this.showCalendarHint = false;
+            this.showPinchHint = true;
+          }
+        }]
+      })
+    }
   }
   @State showPinchHint: boolean = false;
   @Builder pinchHintPopup() {
@@ -1203,6 +1220,16 @@ struct Schedule {
           .id('week_of_term_span')
           .fontWeight(FontWeight.Bold)
           .fontSize(14)
+          .bindPopup(this.showCalendarHint, {
+            builder: this.calendarHintPopup(),
+            placement: Placement.Bottom,
+            width: 300,
+            onStateChange: (status) => {
+              if (!status.isVisible) {
+                this.showCalendarHint = false;
+              }
+            }
+          })
           .onClick(() => {
             let totalWeekNum = this.semesters[this.displayTerm].totalWeekNum;
             if (totalWeekNum === 0)

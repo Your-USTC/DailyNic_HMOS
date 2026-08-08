@@ -69,10 +69,6 @@
       "value": "评课社区"
     },
     {
-      "name": "WolframAlpha",
-      "value": "Wolfram Alpha"
-    },
-    {
       "name": "KeChengZiLiao",
       "value": "课程资料"
     },
@@ -151,6 +147,10 @@
     {
       "name": "JiKaoZiCe",
       "value": "机考自测"
+    },
+    {
+      "name": "JiSuanGongJu",
+      "value": "计算工具"
     },
     {
       "name": "HuaZhuShangLv",

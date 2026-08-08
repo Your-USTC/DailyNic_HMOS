@@ -73,7 +73,10 @@ export const LINK: LinkSet[] = [
       { url: 'MockPracticeList', subtitle: '本地答题', notUrl: true },
       { url: 'https://ti.u5tc.cn/', subtitle: 'vitx 答题' },
       { url: 'https://quiz-stack.enthusjast.cc/', subtitle: 'Quiz Stack' }]},
-    { title: $r('app.string.WolframAlpha'), url: [{ url: 'https://wolframalpha.com' }], icon: $r('app.media.WolframAlpha') }
+    { title: $r('app.string.JiSuanGongJu'), icon: $r('app.media.WolframAlpha') , url: [
+      { url: 'https://wolframalpha.com', subtitle: 'Wolfram|Alpha' },
+      { url: 'https://www.desmos.com/?lang=zh-CN', subtitle: 'Desmos' },
+      { url: 'https://www.geogebra.org/calculator', subtitle: 'GeoGebra 计算器套件'}]}
   ]},
   // 网络资源
   { title: '󰗱 网络资源', set: [

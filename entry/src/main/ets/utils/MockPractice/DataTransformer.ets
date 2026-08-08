@@ -83,6 +83,8 @@ export function getObjectFromCsv(data: string[]): singleQuestion[] {
         options.push(fields[10 + j]);
       }
     }
+    if (fields[1] === '填空题')
+      fields[5] = options[0];
     result.push({
       section: fields[0],
       context: fields[2],

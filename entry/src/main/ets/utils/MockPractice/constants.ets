@@ -48,11 +48,13 @@ export interface answerRecord {
 }
 
 export interface answerSession extends answerSessionAttribute {
+  sessionId: string
   answers: answerRecord[]
   currentIndex: number
 }
 
 export interface sessionSummary {
+  sessionId: string
   total: number
   answered: number
   correct: number
@@ -70,4 +72,19 @@ export interface testAttribute {
   createTime: number,
   lastOpenTime: number,
   uuid: string,
+}
+
+export interface fullID {
+  name: string
+  test: string
+  answer: string
+}
+
+export type AnswerStatus = 'correct' | 'wrong' | 'unanswered'
+
+export interface questionStatus {
+  questionIndex: number
+  status: AnswerStatus
+  starred: boolean
+  userAnswer?: string
 }

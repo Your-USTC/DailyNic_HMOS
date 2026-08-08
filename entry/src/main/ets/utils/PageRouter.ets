@@ -38,9 +38,9 @@ export struct linkPickerDialog {
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .textAlign(TextAlign.Center)
-          .layoutWeight(1)
           .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis });
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .layoutWeight(1)
 
         Button({ buttonStyle: ButtonStyleMode.NORMAL, type: ButtonType.Circle }) {
           Image($r('app.media.close'))
@@ -66,6 +66,7 @@ export struct linkPickerDialog {
             .layoutWeight(1)
             .textAlign(TextAlign.Center)
         }
+        .padding({ right: 30 })
         .width('100%')
         .height(40)
         .onClick(() => {
@@ -73,11 +74,15 @@ export struct linkPickerDialog {
           this.controller.close();
         })
 
-        if (index < LINK[this.gridIndex].set[this.index].url.length - 1)
-          Divider()
+        Divider()
       })
+
+      Text('󰊗 此处仅提供快捷入口，开发者不对其内容负责，不保证其有效性')
+        .fontSize(10)
+        .margin({ top: 8 })
+        .textAlign(TextAlign.Center)
     }
-    .padding({ top: 16, right: 16, left: 16, bottom: 8 })
+    .padding(16)
     .width('100%')
   }
 }
