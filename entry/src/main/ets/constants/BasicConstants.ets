@@ -12,7 +12,7 @@ export const FULL_TIME_FORMAT: Intl.DateTimeFormatOptions = {
   hourCycle: i18n.System.is24HourClock() ? 'h23' : 'h12'
 };
 
-export const currentAppVersion: string = "2.1.1";
+export const currentAppVersion: string = "2.2.0";
 export const currentScheduleVersion: string = "2.1.0";
 
 export const deviceType: string = deviceInfo.deviceType;

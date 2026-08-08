@@ -28,20 +28,23 @@ class FormDataClass {
       const termStartTime: number = ScheduleManager.semesters[ScheduleManager.defaultSemester].beginTime;
 
       let currentWeek: number = 0;
-      if (this.currentTime < termStartTime)
+      if (this.currentTime < termStartTime) {
         currentWeek = 1;
-      else if (this.currentTime > termStartTime + ScheduleManager.semesters[ScheduleManager.defaultSemester].totalWeekNum * millisecondsPerWeek)
+        this.todayCourse = this.tomorrowCourse = [];
+      } else if (this.currentTime > termStartTime + ScheduleManager.semesters[ScheduleManager.defaultSemester].totalWeekNum * millisecondsPerWeek) {
         currentWeek = 1;
-      else
+        this.todayCourse = this.tomorrowCourse =  [];
+      } else {
         currentWeek = Math.ceil((this.currentTime - termStartTime) / millisecondsPerWeek);
 
-      // const todayStart: number = new Date(currentTime).setHours(0, 0, 0, 0);
-      this.todayCourse = ScheduleManager.getDefaultClassByDay(currentWeek, currentTime.getDay())
+        // const todayStart: number = new Date(currentTime).setHours(0, 0, 0, 0);
+        this.todayCourse = ScheduleManager.getDefaultClassByDay(currentWeek, currentTime.getDay())
         // .filter(item => ScheduleSources.commonClassStamp[item.timeSpan[item.timeSpan.length - 1]][1] + todayStart > this.currentTime)
-        .sort((a, b) => a.timeSpan[0] - b.timeSpan[0]);
+          .sort((a, b) => a.timeSpan[0] - b.timeSpan[0]);
 
-      this.tomorrowCourse = ScheduleManager.getDefaultClassByDay(currentWeek + (currentTime.getDay() === 6 ? 1 : 0), (currentTime.getDay() + 1) % 7)
-        .sort((a, b) => a.timeSpan[0] - b.timeSpan[0]);
+        this.tomorrowCourse = ScheduleManager.getDefaultClassByDay(currentWeek + (currentTime.getDay() === 6 ? 1 : 0), (currentTime.getDay() + 1) % 7)
+          .sort((a, b) => a.timeSpan[0] - b.timeSpan[0]);
+      }
 
       //this.cardListParameter.itemCount = this.todayCourse.length;
       this.count = this.todayCourse.length;
