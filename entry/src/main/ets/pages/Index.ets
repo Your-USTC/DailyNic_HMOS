@@ -124,6 +124,7 @@ struct Index {
     this.refreshInfo();
     // 初始化背景
     BackgroundImage.init(hostContext());
+    this.avatar = BackgroundImage.avatar;
     // 初始化日历
     WriteCalendar.initializeCalendar(this.getUIContext());
     // 首次启动提示
@@ -863,16 +864,20 @@ struct Index {
   /**
    * 页面: 设置
    */
+  @State avatar: ResourceStr | undefined = undefined;
   @Builder pageSettings() {
     List({ space: 12 }) {
       ListItem() {
         // new ItemData(0, $r('app.string.set_account_info'), $r('app.media.key_horizontal'))
         Row({ space: 6 }) {
-          Image($r('app.media.nic'))
+          Image(this.avatar)
             .width(60)
             .height(60)
             .borderRadius(30)
             .autoResize(true)
+            .onClick(() => BackgroundImage.pickAvatar().then(() => {
+              this.avatar = BackgroundImage.avatar;
+            }))
           Text(this.displayUsername || $r('app.string.welcome_to_your_ustc'))
             .fontSize(18)
             .fontWeight(FontWeight.Bold)

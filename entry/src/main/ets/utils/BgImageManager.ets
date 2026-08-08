@@ -1,6 +1,7 @@
 
 import UnifiedPreferences from './UnifyPreference';
-import { fileIo, fileUri } from "@kit.CoreFileKit";
+import { fileIo, fileUri, ListFileOptions } from "@kit.CoreFileKit";
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 
 // [浅色标题背景，深色标题背景，通用按钮和进度条背景]
 export const presetColor: string[][] = [
@@ -24,7 +25,7 @@ export const presetColor: string[][] = [
 class BackgroundImage {
   pic: ResourceStr | undefined = undefined;
   showImage: boolean = UnifiedPreferences.getBoolSync('ShowImage', false); // 是否展示
-  readonly imgPath: string = UnifiedPreferences.getSync('ImagePath', ''); // 图片路径
+  imgPath: string = UnifiedPreferences.getSync('ImagePath', ''); // 图片路径
   basicDir: string = '/data/storage/el2/base/files';
   blurLevel: BlurStyle | undefined = undefined;
   opacityLevel: number = 1;
@@ -32,6 +33,8 @@ class BackgroundImage {
   themeColor: number = UnifiedPreferences.getNumberSync('ThemeColor', 0);
   brightness: number = 1;
 
+  avatar: ResourceStr = $r('app.media.avatar_placeholder');
+  avatarPath: string = UnifiedPreferences.getSync('AvatarPath', '');
   /**
    * 初始化
    * @param context 传入上下文
@@ -58,7 +61,64 @@ class BackgroundImage {
       // this.blurLevel = undefined;
       // this.opacityLevel = 1;
     }
+
+    if (this.avatarPath !== '') {
+      this.avatar = fileUri.getUriFromPath(this.avatarPath);
+    }
     this.basicDir = context.filesDir;
+  }
+
+  deleteBackgroundImage() {
+    if (this.imgPath !== '' && fileIo.accessSync(this.imgPath)) {
+      try {
+        fileIo.unlinkSync(this.imgPath);
+      } catch (e) {
+        console.error('Failed to delete file');
+      }
+    }
+    this.imgPath = '';
+    this.showImage = false;
+    UnifiedPreferences.putSync('ImagePath', '', false);
+    UnifiedPreferences.putSync('ShowImage', false, false);
+    UnifiedPreferences.flush();
+  }
+
+  async pickAvatar() {
+    try {
+      const photoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
+      photoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
+      photoSelectOptions.maxSelectNumber = 1;
+      const photoPicker = new photoAccessHelper.PhotoViewPicker();
+      const photoSelectResult: photoAccessHelper.PhotoSelectResult = await photoPicker.select(photoSelectOptions);
+      if (photoSelectResult.photoUris[0] !== undefined) {
+        // 删除旧的
+        const listFileOption: ListFileOptions = {
+          filter: { displayName: ['avatarImage_*'] }
+        };
+        fileIo.listFileSync(this.basicDir, listFileOption).forEach((value, index) => {
+          fileIo.unlinkSync(`${this.basicDir}/${value}`);
+        });
+        const oriImgPath = new fileUri.FileUri(photoSelectResult.photoUris[0]).path;
+        this.avatarPath = this.basicDir + `/avatarImage_${Date.now()}`;
+        fileIo.copyFileSync(oriImgPath, this.avatarPath);
+        this.avatar = fileUri.getUriFromPath(this.avatarPath);
+        UnifiedPreferences.putSync('AvatarPath', this.avatarPath);
+      }
+    } catch (error) {
+      console.error(`PhotoViewPicker failed: ${JSON.stringify(error)}`);
+    }
+  }
+
+  deleteAvatar() {
+    if (this.avatarPath !== '') {
+      try {
+        fileIo.unlinkSync(this.avatarPath);
+      } catch (e) {
+        console.error('Failed to delete file');
+      }
+    }
+    this.avatar = $r('app.media.avatar_placeholder');
+    UnifiedPreferences.putSync('AvatarPath', '');
   }
 }
 

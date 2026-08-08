@@ -168,6 +168,46 @@ struct CleanStorage {
             Divider();
 
             Row({ space: 5 }) {
+              Image($r('app.media.picture_damage'))
+                .height(27)
+                .width(27)
+                .margin({ right: 12, left: 2 })
+              Text($r('app.string.delete_background_image'))
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .padding(8)
+            .opacity(BackgroundImage.imgPath === '' ? 0.4 : 1)
+            .onClick(() => {
+              if (BackgroundImage.imgPath !== '') {
+                BackgroundImage.deleteBackgroundImage();
+                this.getUIContext().getPromptAction().showToast({ message: $r('app.string.clear_success') });
+              }
+            })
+
+            Divider();
+
+            Row({ space: 5 }) {
+              Image($r('app.media.picture_damage'))
+                .height(27)
+                .width(27)
+                .margin({ right: 12, left: 2 })
+              Text($r('app.string.delete_background_image'))
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .padding(8)
+            .opacity(BackgroundImage.avatarPath === '' ? 0.4 : 1)
+            .onClick(() => {
+              if (BackgroundImage.avatarPath !== '') {
+                BackgroundImage.deleteAvatar();
+                this.getUIContext().getPromptAction().showToast({ message: $r('app.string.clear_success') });
+              }
+            })
+
+            Divider();
+
+            Row({ space: 5 }) {
               Image($r('app.media.exclamationmark_circle'))
                 .height(27)
                 .width(27)

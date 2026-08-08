@@ -107,22 +107,23 @@ struct ThemeSetting {
           const newImgPath: string = BackgroundImage.basicDir + '/backgroundImage';
           fileIo.copyFile(this.oriImgPath, newImgPath)
             .catch((error: BusinessError) => console.error('Copy image failed:', JSON.stringify(error)));
-          UnifiedPreferences.putSync('ImagePath', newImgPath);
+          UnifiedPreferences.putSync('ImagePath', newImgPath, false);
         }
         if (this.isShown !== BackgroundImage.showImage)
-          UnifiedPreferences.putSync('ShowImage', this.isShown);
+          UnifiedPreferences.putSync('ShowImage', this.isShown, false);
         if (this.showBlurSlider !== BackgroundImage.backgroundBlur)
-          UnifiedPreferences.putSync('BackgroundBlur', this.showBlurSlider);
+          UnifiedPreferences.putSync('BackgroundBlur', this.showBlurSlider, false);
         if (this.blurNum !== this.oriBlurNum)
-          UnifiedPreferences.putSync('BlurLevel', this.blurNum);
+          UnifiedPreferences.putSync('BlurLevel', this.blurNum, false);
         if (this.opacityNum !== this.oriOpacityNum)
-          UnifiedPreferences.putSync('OpacityLevel', this.opacityNum);
+          UnifiedPreferences.putSync('OpacityLevel', this.opacityNum, false);
         if (this.selectedColor !== BackgroundImage.themeColor)
-          UnifiedPreferences.putSync('ThemeColor', this.selectedColor);
+          UnifiedPreferences.putSync('ThemeColor', this.selectedColor, false);
         if (this.imgBrightness !== BackgroundImage.brightness)
-          UnifiedPreferences.putSync('BackgroundBrightness', this.imgBrightness);
-        UnifiedPreferences.putSync('AdaptSplit', this.adaptSplit);
-        UnifiedPreferences.putSync('FaultOccurred', false);
+          UnifiedPreferences.putSync('BackgroundBrightness', this.imgBrightness, false);
+        UnifiedPreferences.putSync('AdaptSplit', this.adaptSplit, false);
+        UnifiedPreferences.putSync('FaultOccurred', false, false);
+        UnifiedPreferences.flush();
 
         WantAbility.restart(this.getUIContext().getHostContext() as common.UIAbilityContext);
       }

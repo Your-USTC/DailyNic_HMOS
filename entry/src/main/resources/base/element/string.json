@@ -217,6 +217,14 @@
       "value": "清理缓存（不影响 Cookies）"
     },
     {
+      "name": "delete_background_image",
+      "value": "删除背景图片（重启生效）"
+    },
+    {
+      "name": "delete_avatar_image",
+      "value": "删除头像图片（重启生效）"
+    },
+    {
       "name": "switch_page",
       "value": "多页面切换"
     },

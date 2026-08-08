@@ -28,13 +28,14 @@ class UnifiedPreferences {
     }
   }
 
-  putSync(key: string, value: string | number | boolean) {
+  putSync(key: string, value: string | number | boolean, flush: boolean = true) {
     try {
       this.preferences?.putSync(key, value);
     } catch (error) {
       console.error(`putSync ERROR: [${error.name}] ${error.message}`);
     }
-    this.flush();    // 可选：立即持久化
+    if (flush)
+      this.flush();    // 可选：立即持久化
   }
 
   getSync(key: string, defaultValue: string = ''): string {
