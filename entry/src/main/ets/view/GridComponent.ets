@@ -139,7 +139,7 @@ export struct MostRecentComponent {
         .onClick(() => {
           this.getUIContext().showTextPickerDialog({
             selected: FunctionOrder.maxRecord - 1,
-            range: (tools.getContArray([[1, 28]], true) as string[]).map(count => '至多显示 ' + count + ' 个'), // 在此处修改允许用户选择的最大显示数量上限！！（现在是20）
+            range: (tools.getContArray([[1, 28]], true) as string[]).map(count => `至多显示 ${count} 个`), // 允许用户选择的最大显示数量上限
             defaultPickerItemHeight: 36,
             canLoop: false,
             onAccept: (value: TextPickerResult) => {

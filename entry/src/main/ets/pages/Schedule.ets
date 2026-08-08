@@ -1274,7 +1274,7 @@ struct Schedule {
           .fontSize(14)
           .onClick(() => {
             this.getUIContext().showTextPickerDialog({
-              range: tools.getContArray([[1, 20]], true) as string[],
+              range: (tools.getContArray([[1, 20]], true) as string[]).map(count => `第 ${count} 周`),
               selected: this.weekDisplayed - 1,
               canLoop: false,
               onAccept: (value: TextPickerResult) => {

@@ -64,6 +64,9 @@ function migrateV211ToV220(): void {
     UnifiedPreferences.deleteSync('SemestersData');
     UnifiedPreferences.deleteSync('DefaultSemester');
   }
+
+  // 重置提示
+  UnifiedPreferences.putSync('ShowPinchHint', true);
 }
 
 /**

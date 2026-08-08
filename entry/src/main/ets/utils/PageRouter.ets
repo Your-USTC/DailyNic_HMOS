@@ -33,6 +33,7 @@ export struct linkPickerDialog {
         Image(gIndex_to_pic(this.gridIndex, this.index))
           .height(36)
           .width(36)
+          .objectFit(ImageFit.Contain)
 
         Text(LINK[this.gridIndex].set[this.index].title)
           .fontSize(20)

@@ -148,8 +148,10 @@ struct Webview {
   @State loadingProgress: number = 0;
   haveTriedLogin: boolean = false;
   autoGetFailed: boolean = false;
+  @State useless: string = '';
   dialogController: CustomDialogController = new CustomDialogController({
     builder: PasswordDialog({
+      refreshUsername: this.useless,
       isFromSetting: false,
       onConfirm: () => {
         this.haveTriedLogin = true;

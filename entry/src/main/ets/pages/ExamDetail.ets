@@ -5,6 +5,7 @@ import examManager, { examAttribute, areExamAttributesEqual } from '../utils/Exa
 import BackgroundImage, { presetColor } from '../utils/BgImageManager';
 import { i18n } from '@kit.LocalizationKit';
 import { FULL_TIME_FORMAT } from '../constants/BasicConstants';
+import MessageDialog from '../view/MessageDialog';
 
 @Builder
 export function ExamBuilder(name: string, param?: Object) {
@@ -19,6 +20,7 @@ struct ExamDetail {
   @State examInfo: examAttribute[] = [];
   @State currentTime: Date = new Date();
 
+  msgDialogController?: CustomDialogController;
   /**
    * 详情弹窗部分
    */
@@ -51,39 +53,19 @@ struct ExamDetail {
           .height(42)
           .width(42)
           .onClick(() => {
-            this.getUIContext().showAlertDialog({
-              message: $r('app.string.delete_exam_or_not'),
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              primaryButton: {
-                value: $r('app.string.cancel'),
-                action: () => {}
-              },
-              secondaryButton: {
-                enabled: true,
-                defaultFocus: true,
-                style: DialogButtonStyle.DEFAULT,
-                fontColor: $r('app.color.red'),
-                value: $r('app.string.ok'),
-                action: () => {
+            this.msgDialogController = new CustomDialogController({
+              builder: MessageDialog({
+                message: $r('app.string.delete_exam_or_not'),
+                onConfirm: () => {
                   examManager.deleteExam(this.oriExamInfo);
                   this.examInfo = examManager.allExamInfo;
                   this.showSheet = false;
                 }
-              },
-              cancel: () => {
-                console.info('Closed callbacks');
-              },
-              onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                  dismissDialogAction.dismiss();
-                }
-                if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                  dismissDialogAction.dismiss();
-                }
-              }
+              }),
+              autoCancel: true,
+              gridCount: 4
             });
+            this.msgDialogController.open();
           });
 
           Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
@@ -128,35 +110,18 @@ struct ExamDetail {
           }
           this.newExamInfo.date = `${this.date} ${this.startHour.toString().padStart(2, '0')}:${this.startMinute.toString().padStart(2, '0')}~${this.endHour.toString().padStart(2, '0')}:${this.endMinute.toString().padStart(2, '0')}`;
           if (!areExamAttributesEqual(this.newExamInfo, this.oriExamInfo)) {
-            this.getUIContext().showAlertDialog({
-              title: $r('app.string.unsaved_change'),
-              message: $r('app.string.back_to_examinfo_or_not'),
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              primaryButton: {
-                value: $r('app.string.cancel'),
-                action: () => {}
-              },
-              secondaryButton: {
-                enabled: true,
-                defaultFocus: true,
-                style: DialogButtonStyle.HIGHLIGHT,
-                value: $r('app.string.ok'),
-                action: () => {
+            this.msgDialogController = new CustomDialogController({
+              builder: MessageDialog({
+                mainTitle: $r('app.string.unsaved_change'),
+                message: $r('app.string.back_to_examinfo_or_not'),
+                onConfirm: () => {
                   this.showSheet = false;
                 }
-              },
-              cancel: () => {},
-              onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                  dismissDialogAction.dismiss();
-                }
-                if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                  dismissDialogAction.dismiss();
-                }
-              }
+              }),
+              autoCancel: true,
+              gridCount: 4
             });
+            this.msgDialogController.open();
           } else {
             this.showSheet = false;
           }
@@ -607,37 +572,18 @@ struct ExamDetail {
               .padStart(2, '0')}~${this.endHour.toString().padStart(2, '0')}:${this.endMinute.toString()
               .padStart(2, '0')}`;
           if (!areExamAttributesEqual(this.oriExamInfo, this.newExamInfo)) {
-            this.getUIContext().showAlertDialog({
-              title: $r('app.string.unsaved_change'),
-              message: $r('app.string.back_to_schedule_or_not'),
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              primaryButton: {
-                value: $r('app.string.cancel'),
-                action: () => {
-                }
-              },
-              secondaryButton: {
-                enabled: true,
-                defaultFocus: true,
-                style: DialogButtonStyle.HIGHLIGHT,
-                value: $r('app.string.ok'),
-                action: () => {
+            this.msgDialogController = new CustomDialogController({
+              builder: MessageDialog({
+                mainTitle: $r('app.string.unsaved_change'),
+                message: $r('app.string.back_to_examinfo_or_not'),
+                onConfirm: () => {
                   DismissSheetAction.dismiss();
                 }
-              },
-              cancel: () => {
-              },
-              onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
-                if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
-                  dismissDialogAction.dismiss();
-                }
-                if (dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
-                  dismissDialogAction.dismiss();
-                }
-              }
+              }),
+              autoCancel: true,
+              gridCount: 4
             });
+            this.msgDialogController.open();
           } else {
             DismissSheetAction.dismiss();
           }

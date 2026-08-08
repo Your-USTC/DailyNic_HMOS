@@ -696,9 +696,10 @@ struct Index {
                     } else {
                       Text($r('app.string.exam_processing'))
                         .layoutWeight(1)
-                        .fontSize(22)
+                        .fontSize(18)
+                        .margin({ bottom: 4 })
                         .fontColor($r('app.color.transparent_text'))
-                        .textAlign(TextAlign.Start);
+                        .textAlign(TextAlign.End);
                     }
                   }
                   .alignItems(VerticalAlign.Top)

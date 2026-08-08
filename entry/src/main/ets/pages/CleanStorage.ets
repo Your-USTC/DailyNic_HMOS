@@ -4,8 +4,7 @@ import { application, common, contextConstant } from '@kit.AbilityKit'
 import { formatBytes } from '../utils/tools';
 import { WantAbility } from '../utils/WantAbility';
 import UnifiedPreferences from '../utils/UnifyPreference';
-import BackgroundImage, { presetColor } from  '../utils/BgImageManager';
-import { webview } from '@kit.ArkWeb';
+import BackgroundImage from  '../utils/BgImageManager';
 
 @Builder
 export function CleanStorageBuilder(name: string, param?: number) {
@@ -88,7 +87,11 @@ struct CleanStorage {
 
       const usedTotal = this.appSize + this.dataSize + this.cacheSize;
       this.otherSize = this.deviceSize - usedTotal - this.freeSize;
-      this.percentage = `${(usedTotal / this.deviceSize * 100).toPrecision(3)}%`;
+      const percentNum = usedTotal / this.deviceSize * 100;
+      if (percentNum < 0.01)
+        this.percentage = '< 0.01%';
+      else
+        this.percentage = `${percentNum.toFixed(2)}%`;
     } catch(err) {
       this.percentage = `计算占用空间时发生错误：${err}`;
     }
@@ -136,28 +139,30 @@ struct CleanStorage {
           Column() {
             Row({ space: 5 }) {
               Image($r('app.media.clean'))
-                .height(27)
-                .width(27)
-                .margin({ right: 12, left: 2 })
+                .height(22)
+                .width(22)
+                .margin({ right: 12, left: 6 })
               Text($r('app.string.clean_cache'))
                 .layoutWeight(1)
+                .fontSize(16)
             }
             .width('100%')
-            .padding(8)
             .onClick(() => this.clearCache())
+            .height(42)
 
             Divider();
 
             Row({ space: 5 }) {
               Image($r('app.media.remove_cookie'))
-                .height(27)
-                .width(27)
-                .margin({ right: 12, left: 2 })
+                .height(22)
+                .width(22)
+                .margin({ right: 12, left: 6 })
               Text($r('app.string.wipe_cookie'))
                 .layoutWeight(1)
+                .fontSize(16)
             }
             .width('100%')
-            .padding(8)
+            .height(42)
             .onClick(() => {
               try {
                 // this.webviewController.removeCache(true);
@@ -174,14 +179,15 @@ struct CleanStorage {
 
             Row({ space: 5 }) {
               Image($r('app.media.picture_damage'))
-                .height(27)
-                .width(27)
-                .margin({ right: 12, left: 2 })
+                .height(22)
+                .width(22)
+                .margin({ right: 12, left: 6 })
               Text($r('app.string.delete_background_image'))
                 .layoutWeight(1)
+                .fontSize(16)
             }
             .width('100%')
-            .padding(8)
+            .height(42)
             .opacity(this.delBackgroundDisabled ? 0.4 : 1)
             .onClick(() => {
               if (!this.delBackgroundDisabled) {
@@ -196,14 +202,15 @@ struct CleanStorage {
 
             Row({ space: 5 }) {
               Image($r('app.media.picture_damage'))
-                .height(27)
-                .width(27)
-                .margin({ right: 12, left: 2 })
+                .height(22)
+                .width(22)
+                .margin({ right: 12, left: 6 })
               Text($r('app.string.delete_avatar_image'))
                 .layoutWeight(1)
+                .fontSize(16)
             }
             .width('100%')
-            .padding(8)
+            .height(42)
             .opacity(this.delAvatarDisabled ? 0.4 : 1)
             .onClick(() => {
               if (!this.delAvatarDisabled) {
@@ -218,15 +225,16 @@ struct CleanStorage {
 
             Row({ space: 5 }) {
               Image($r('app.media.exclamationmark_circle'))
-                .height(27)
-                .width(27)
-                .margin({ right: 12, left: 2 })
+                .height(22)
+                .width(22)
+                .margin({ right: 12, left: 6 })
               Text($r('app.string.manual_fault'))
                 .layoutWeight(1)
+                .fontSize(16)
                 .fontColor($r('app.color.red'))
             }
             .width('100%')
-            .padding(8)
+            .height(42)
             .onClick(() => {
               UnifiedPreferences.putSync('RecoveryMode', true);
               WantAbility.restart(this.context);
