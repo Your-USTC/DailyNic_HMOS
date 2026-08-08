@@ -105,11 +105,11 @@
       "value": "一卡通"
     },
     {
-      "name": "LLM",
-      "value": "LLM 公共服务平台"
+      "name": "CiYuanJiHua",
+      "value": "词元计划"
     },
     {
-      "name": "SuanLiPingTai",
+      "name": "107",
       "value": "本科生算力平台"
     },
     {
@@ -185,10 +185,6 @@
       "value": "Online Judge"
     },
     {
-      "name": "VlabShiYanZhongXin",
-      "value": "Vlab 实验中心"
-    },
-    {
       "name": "JiYuanKeYanPingTai",
       "value": "计院科研平台"
     },
@@ -231,6 +227,10 @@
     {
       "name": "XiaoYuanBanChe",
       "value": "校园班车"
+    },
+    {
+      "name": "QunLiaoHuiZong",
+      "value": "群聊汇总"
     },
     {
       "name": "YuanXiZhuanYe",

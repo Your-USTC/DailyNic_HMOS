@@ -192,7 +192,7 @@ struct CleanStorage {
                 .height(27)
                 .width(27)
                 .margin({ right: 12, left: 2 })
-              Text($r('app.string.delete_background_image'))
+              Text($r('app.string.delete_avatar_image'))
                 .layoutWeight(1)
             }
             .width('100%')

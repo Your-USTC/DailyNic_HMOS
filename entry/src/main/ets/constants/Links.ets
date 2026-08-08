@@ -88,10 +88,10 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.JiYuanKeYanPingTai'), url: [{ url: 'https://cscourse.ustc.edu.cn' }], icon: $r('app.media.JiYuanKeYanPingTai') },
     { title: $r('app.string.SCCGitlab'), url: [{ url: 'https://git.ustc.edu.cn' }], icon: $r('app.media.SCCGitLab') },
     { title: $r('app.string.LUGGitlab'), url: [{ url: 'https://git.lug.ustc.edu.cn' }], icon: $r('app.media.LUGGitLab') },
-    { title: $r('app.string.VlabShiYanZhongXin'), url: [{ url: 'https://vlab.ustc.edu.cn' }], icon: $r('app.media.VlabShiYanZhongXin') },
-    { title: $r('app.string.LLM'), url: [{ url: 'https://llm.ustc.edu.cn/api/auth/oauth/login' }], icon: $r('app.media.default_function_icon') },
-    { title: $r('app.string.SuanLiPingTai'), url: [{ url: 'https://107.ustc.edu.cn' }], icon: $r('app.media.default_function_icon') },
-    { title: $r('app.string.LUG'), url: [{ url: 'https://lug.ustc.edu.cn' }], icon: $r('app.media.default_function_icon') },
+    { title: 'Vlab', url: [{ url: 'https://vlab.ustc.edu.cn' }], icon: $r('app.media.VlabShiYanZhongXin') },
+    { title: $r('app.string.CiYuanJiHua'), url: [{ url: 'https://llm.ustc.edu.cn/api/auth/oauth/login' }], icon: $r('app.media.CiYuanJiHua') },
+    { title: $r('app.string.107'), url: [{ url: 'https://107.ustc.edu.cn' }], icon: $r('app.media.107') },
+    { title: $r('app.string.LUG'), url: [{ url: 'https://lug.ustc.edu.cn' }], icon: $r('app.media.LUG') },
     { title: $r('app.string.WangLuoTong'), url: [{ url: 'https://zczx.ustc.edu.cn' }], icon: $r('app.media.WangLuoTong') },
     { title: $r('app.string.YiKaTong'), url: [{ url: 'https://ecard.ustc.edu.cn' }], icon: $r('app.media.YiKaTong') },
     { title: $r('app.string.ZhengBanRuanJian'), url: [{ url: 'https://software.ustc.edu.cn' }], icon: $r('app.media.ZhengBanRuanJian') },
@@ -116,13 +116,19 @@ export const LINK: LinkSet[] = [
   ]},
   // 校园生活
   { title: '󰠍 校园生活', set: [
-    { title: '阳光跑', url: [{ url: 'http://id.ustc.edu.cn/cas/oauth2.0/authorize?response_type=code&client_id=ZHTZCSXT&redirect_uri=https%3A%2F%2Ftc.ustc.edu.cn%2Fsunshine%2Flogin%2Fustc%2FloginRedirect' }], icon: $r('app.media.default_function_icon') },
-    { title: '体测', url: [{ url: 'http://id.ustc.edu.cn/cas/oauth2.0/authorize?response_type=code&client_id=ZHTZCSXT&redirect_uri=https%3A%2F%2Ftc.ustc.edu.cn%2Ffitness%2Flogin%2Fustc%2FloginRedirect' }], icon: $r('app.media.default_function_icon') },
+    { title: '体测系统', icon: $r('app.media.TiCeXiTong'), url: [
+      { url: 'http://id.ustc.edu.cn/cas/oauth2.0/authorize?response_type=code&client_id=ZHTZCSXT&redirect_uri=https%3A%2F%2Ftc.ustc.edu.cn%2Fsunshine%2Flogin%2Fustc%2FloginRedirect', subtitle: '阳光跑' },
+      { url: 'http://id.ustc.edu.cn/cas/oauth2.0/authorize?response_type=code&client_id=ZHTZCSXT&redirect_uri=https%3A%2F%2Ftc.ustc.edu.cn%2Ffitness%2Flogin%2Fustc%2FloginRedirect', subtitle: '体测' }
+    ]},
     { title: $r('app.string.XiaoYuanBanChe'), url: [{ url: 'https://weixine.ustc.edu.cn/ustcqy/mobile/busTimetable_gov' }], icon: $r('app.media.XiaoYuanBanChe') },
+    { title: $r('app.string.QunLiaoHuiZong'), icon: $r('app.media.default_function_icon'), url: [
+      { url: 'https://docs.qq.com/sheet/DZHZ0b2lVZmFMenFw', subtitle: '科大各类群汇总'},
+      { url: 'https://ustcgroup.pages.dev/', subtitle: 'USTC 群聊信息汇总'}
+    ]},
     { title: $r('app.string.YingJuGouPiao'), url: [{ url: "https://ghticket.ustc.edu.cn" }], icon: $r('app.media.YingJuGouPiao') },
     { title: $r('app.string.BaoXiuDaTing'), url: [{ url: 'https://xsfw.ustc.edu.cn' }], icon: $r('app.media.BaoXiuDaTing') },
     { title: $r('app.string.XiaoYiYuan'), url: [{ url: 'https://hospital.ustc.edu.cn/main.htm' }], icon: $r('app.media.XiaoYiYuan') },
-    { title: $r('app.string.HuaZhuShangLv'), url: [{ url: 'https://i.ustc.edu.cn/page/mobile/huazhu' }], icon: $r('app.media.default_function_icon') },
+    { title: $r('app.string.HuaZhuShangLv'), url: [{ url: 'https://i.ustc.edu.cn/page/mobile/huazhu' }], icon: $r('app.media.HuaZhuShangLv') },
     { title: $r('app.string.XiaoYuanDiTu'), icon: $r('app.media.XiaoYuanDiTu'), url: [
       { url: 'https://map.ustc.edu.cn/m', subtitle: '二维地图' },
       { url: 'https://vr.shouxi360.com/c/vyS6HSJjeej.html', subtitle: '全景地图' }
