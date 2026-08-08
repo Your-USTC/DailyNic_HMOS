@@ -110,11 +110,11 @@
     },
     {
       "name": "107",
-      "value": "本科生算力平台"
+      "value": "算力平台"
     },
     {
       "name": "LUG",
-      "value": "Linux 用户协会"
+      "value": "Linux用户协会"
     },
     {
       "name": "WangLuoTong",
@@ -173,12 +173,12 @@
       "value": "Web VPN"
     },
     {
-      "name": "LUGGitlab",
-      "value": "LUG GitLab"
+      "name": "Gitlab",
+      "value": "GitLab"
     },
     {
-      "name": "SCCGitlab",
-      "value": "SCC GitLab"
+      "name": "Vlab",
+      "value": "Vlab实验平台"
     },
     {
       "name": "KeDaOJ",

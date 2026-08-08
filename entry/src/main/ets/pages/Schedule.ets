@@ -12,6 +12,10 @@ import { JSON } from '@kit.ArkTS';
 import { currentScheduleVersion, FULL_TIME_FORMAT } from '../constants/BasicConstants';
 import MessageDialog from '../view/MessageDialog';
 
+interface PopupOnStateChangeInfo {
+  isVisible: boolean;
+}
+
 const criticalHeight: number = 32; // 紧凑模式临界值(vp)
 const classAndTeacher: number = 22; // 教室和教师占用高度
 const font13fpHeight: number = 16; // 包括行间距
@@ -1050,7 +1054,7 @@ struct Schedule {
           builder: this.pinchHintPopup(),
           placement: Placement.LeftTop,
           width: 300,
-          onStateChange: (status) => {
+          onStateChange: (status: PopupOnStateChangeInfo) => {
             if (!status.isVisible) {
               this.showPinchHint = false;
             }
@@ -1224,7 +1228,7 @@ struct Schedule {
             builder: this.calendarHintPopup(),
             placement: Placement.Bottom,
             width: 300,
-            onStateChange: (status) => {
+            onStateChange: (status: PopupOnStateChangeInfo) => {
               if (!status.isVisible) {
                 this.showCalendarHint = false;
               }
@@ -1319,7 +1323,7 @@ struct Schedule {
             builder: this.xiuHintPopup(),
             placement: Placement.Right,
             width: 300,
-            onStateChange: (status) => {
+            onStateChange: (status: PopupOnStateChangeInfo) => {
               if (!status.isVisible) {
                 this.showXiuHint = false;
               }
@@ -1486,7 +1490,7 @@ struct Schedule {
         builder: this.scrollHintPopup(),
         placement: Placement.Bottom,
         width: 300,
-        onStateChange: (status) => {
+        onStateChange: (status: PopupOnStateChangeInfo) => {
           if (!status.isVisible) {
             this.showScrollHint = false;
           }
@@ -1607,7 +1611,7 @@ struct Schedule {
                   builder: this.colorHintPopup(),
                   placement: Placement.Left,
                   width: 300,
-                  onStateChange: (status) => {
+                  onStateChange: (status: PopupOnStateChangeInfo) => {
                     if (!status.isVisible) {
                       this.showColorHint = false;
                     }
@@ -1642,7 +1646,7 @@ struct Schedule {
                 placement: Placement.Top,
                 arrowPointPosition: ArrowPointPosition.END,
                 builder: () => { this.colorPicker() },
-                onStateChange: (popup) => {
+                onStateChange: (popup: PopupOnStateChangeInfo) => {
                   if (!popup.isVisible) {
                     // 关闭弹窗后记录颜色值
                     this.showColorPicker = false;

@@ -1,13 +1,7 @@
+
 /**
  * --- 功能页链接表 ---
- * 注意:
- *   GridListDataSources.ets
- *   Links.ets
- *   GridListIcons.ets
- *   ListDataConstants.ets
- * 必须同步修改!
  */
-
 
 export interface LinkAddress {
   url: string | Resource;
@@ -33,7 +27,7 @@ export interface LinkSet {
 
 export const LINK: LinkSet[] = [
   // 课程学习
-  { title: '󰢿 课程学习', set: [
+  { title: '\udb82\udcbf 课程学习', set: [
     { title: $r('app.string.JiaoWuXiTong'), url: [{ url: 'https://jw.ustc.edu.cn' }], icon: $r('app.media.JiaoWuXiTong') },
     { title: $r('app.string.KeChengBiao'), url: [{ url: 'https://jw.ustc.edu.cn/for-std/course-table' }], icon: $r('app.media.KeChengBiao') },
     { title: $r('app.string.KaoShiXinXi'), url: [{ url: 'https://jw.ustc.edu.cn/for-std/exam-arrange' }], icon: $r('app.media.KaoShiXinXi') },
@@ -69,26 +63,27 @@ export const LINK: LinkSet[] = [
       { url: 'https://onlineweb.zhihuishu.com', subtitle: '智慧树' },
       { url: 'https://i.chaoxing.com', subtitle: '学习通' },
       { url: 'https://www.icourse163.org/university/USTC#/c', subtitle: '慕课' }]},
-    { title: $r('app.string.JiKaoZiCe'), icon: $r('app.media.default_function_icon'), url: [
+    { title: $r('app.string.JiKaoZiCe'), icon: $r('app.media.JiKaoZiCe'), url: [
       { url: 'MockPracticeList', subtitle: '本地答题', notUrl: true },
       { url: 'https://ti.u5tc.cn/', subtitle: 'vitx 答题' },
       { url: 'https://quiz-stack.enthusjast.cc/', subtitle: 'Quiz Stack' }]},
-    { title: $r('app.string.JiSuanGongJu'), icon: $r('app.media.WolframAlpha') , url: [
-      { url: 'https://wolframalpha.com', subtitle: 'Wolfram|Alpha' },
+    { title: $r('app.string.JiSuanGongJu'), icon: $r('app.media.JiSuanGongJu') , url: [
+      { url: 'https://wolframalpha.com', subtitle: 'Wolfram Alpha' },
       { url: 'https://www.desmos.com/?lang=zh-CN', subtitle: 'Desmos' },
       { url: 'https://www.geogebra.org/calculator', subtitle: 'GeoGebra 计算器套件'}]}
   ]},
   // 网络资源
-  { title: '󰗱 网络资源', set: [
+  { title: '\udb81\uddf1 网络资源', set: [
     { title: $r('app.string.KeDaYouXiang'), url: [{ url: 'http://mail.ustc.edu.cn' }], icon: $r('app.media.KeDaYouXiang') },
     { title: $r('app.string.KeDaYunPan'), url: [{ url: 'https://pan.ustc.edu.cn/login?redirect=/home/index' }], icon: $r('app.media.KeDaYunPan') },
     { title: $r('app.string.KeDaVPN'), url: [{ url: 'https://wvpn.ustc.edu.cn' }], icon: $r('app.media.KeDaVPN') },
     { title: $r('app.string.WenDangXieZuo'), url: [{ url: 'https://latex.ustc.edu.cn' }], icon: $r('app.media.WenDangXieZuo') },
     { title: $r('app.string.KeDaOJ'), url: [{ url: 'https://oj.ustc.edu.cn' }], icon: $r('app.media.KeDaOJ') },
     { title: $r('app.string.JiYuanKeYanPingTai'), url: [{ url: 'https://cscourse.ustc.edu.cn' }], icon: $r('app.media.JiYuanKeYanPingTai') },
-    { title: $r('app.string.SCCGitlab'), url: [{ url: 'https://git.ustc.edu.cn' }], icon: $r('app.media.SCCGitLab') },
-    { title: $r('app.string.LUGGitlab'), url: [{ url: 'https://git.lug.ustc.edu.cn' }], icon: $r('app.media.LUGGitLab') },
-    { title: 'Vlab', url: [{ url: 'https://vlab.ustc.edu.cn' }], icon: $r('app.media.VlabShiYanZhongXin') },
+    { title: $r('app.string.Gitlab'), icon: $r('app.media.GitLab'), url: [
+      { url: 'https://git.ustc.edu.cn', subtitle: '科大官方 GitLab' },
+      { url: 'https://git.lug.ustc.edu.cn', subtitle: 'Linux 用户协会 GitLab' }] },
+    { title: $r('app.string.Vlab'), url: [{ url: 'https://vlab.ustc.edu.cn' }], icon: $r('app.media.VlabShiYanZhongXin') },
     { title: $r('app.string.CiYuanJiHua'), url: [{ url: 'https://llm.ustc.edu.cn/api/auth/oauth/login' }], icon: $r('app.media.CiYuanJiHua') },
     { title: $r('app.string.107'), url: [{ url: 'https://107.ustc.edu.cn' }], icon: $r('app.media.107') },
     { title: $r('app.string.LUG'), url: [{ url: 'https://lug.ustc.edu.cn' }], icon: $r('app.media.LUG') },
@@ -98,7 +93,7 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.KaiYuanJingXiang'), url: [{ url: 'https://mirrors.ustc.edu.cn' }], icon: $r('app.media.KaiYuanJingXiang') }
   ]},
   // 办事服务
-  { title: '󰙠 办事服务', set: [
+  { title: '\udb81\ude60 办事服务', set: [
     { title: $r('app.string.JiaoShiChaXun'), url: [{ url: $rawfile('BuildingQuery.html') }], icon: $r('app.media.JiaoShiChaXun') },
     { title: $r('app.string.ZhiHuiMenHu'), url: [{ url: 'http://i.ustc.edu.cn' }], icon: $r('app.media.ZhiHuiMenHu') },
     { title: $r('app.string.QingChunKeDa'), icon: $r('app.media.QingChunKeDa'), url: [
@@ -115,13 +110,13 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.YuanXiZhuanYe'), url: [{ url: 'https://www.teach.ustc.edu.cn/education/239.html' }], icon: $r('app.media.YuanXiZhuanYe') },
   ]},
   // 校园生活
-  { title: '󰠍 校园生活', set: [
+  { title: '\udb82\udc0d 校园生活', set: [
     { title: '体测系统', icon: $r('app.media.TiCeXiTong'), url: [
       { url: 'http://id.ustc.edu.cn/cas/oauth2.0/authorize?response_type=code&client_id=ZHTZCSXT&redirect_uri=https%3A%2F%2Ftc.ustc.edu.cn%2Fsunshine%2Flogin%2Fustc%2FloginRedirect', subtitle: '阳光跑' },
       { url: 'http://id.ustc.edu.cn/cas/oauth2.0/authorize?response_type=code&client_id=ZHTZCSXT&redirect_uri=https%3A%2F%2Ftc.ustc.edu.cn%2Ffitness%2Flogin%2Fustc%2FloginRedirect', subtitle: '体测' }
     ]},
     { title: $r('app.string.XiaoYuanBanChe'), url: [{ url: 'https://weixine.ustc.edu.cn/ustcqy/mobile/busTimetable_gov' }], icon: $r('app.media.XiaoYuanBanChe') },
-    { title: $r('app.string.QunLiaoHuiZong'), icon: $r('app.media.default_function_icon'), url: [
+    { title: $r('app.string.QunLiaoHuiZong'), icon: $r('app.media.QunLiaoHuiZong'), url: [
       { url: 'https://docs.qq.com/sheet/DZHZ0b2lVZmFMenFw', subtitle: '科大各类群汇总'},
       { url: 'https://ustcgroup.pages.dev/', subtitle: 'USTC 群聊信息汇总'}
     ]},

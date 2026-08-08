@@ -3,7 +3,7 @@
 export default struct UpdateInfo {
   build() {
     List({ space: 8 }) {
-      Repeat<string>(['2_1_1', '2_1_0', '2_0_0', '1_0_0'])
+      Repeat<string>(['2_2_0', '2_1_1', '2_1_0', '2_0_0', '1_0_0'])
         .each((ver: RepeatItem<string>) => {
           ListItem() {
             Column() {

@@ -1,9 +1,11 @@
+.vscode/
 /node_modules
 /oh_modules
 /local.properties
 /.idea
 **/build
 /.hvigor
+.codegenie/
 .cxx
 /.clangd
 /.clang-format
