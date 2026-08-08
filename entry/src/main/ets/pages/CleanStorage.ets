@@ -16,13 +16,13 @@ export function CleanStorageBuilder(name: string, param?: number) {
 @Component
 struct CleanStorage {
 
-  @State percentage: string = '计算中…';
-  @State cacheSize: number = 0;
-  @State appSize: number = 0;
-  @State dataSize: number = 0;
-  @State deviceSize: number = 0;
-  @State totalSize: number = 0;
-  @State otherSize: number = 0;
+  @State appSize: number = 0;    // 应用占用
+  @State dataSize: number = 0;   // 数据（不含缓存）
+  @State cacheSize: number = 0;  // 缓存
+  @State deviceSize: number = 0; // 设备总容量
+  @State freeSize: number = 0;   // 空闲空间（新增）
+  @State otherSize: number = 0;  // 系统和其他App
+  @State percentage: string = '计算中…'; // 占用百分比
   context: common.UIAbilityContext = this.getUIContext().getHostContext() as common.UIAbilityContext;
   private async clearCache() {
     this.percentage = '正在清理…';
@@ -84,14 +84,18 @@ struct CleanStorage {
       this.cacheSize = stat[0].cacheSize;
       this.dataSize = stat[0].dataSize - this.cacheSize;
       this.deviceSize = stat[1];
-      this.totalSize = stat[0].appSize + stat[0].dataSize;
-      this.otherSize = stat[2] - this.totalSize;
-      this.percentage = `${(this.totalSize / this.deviceSize * 100).toPrecision(3)}%`
+      this.freeSize = stat[2];
+
+      const usedTotal = this.appSize + this.dataSize + this.cacheSize;
+      this.otherSize = this.deviceSize - usedTotal - this.freeSize;
+      this.percentage = `${(usedTotal / this.deviceSize * 100).toPrecision(3)}%`;
     } catch(err) {
-      this.percentage = `计算占用空间时发生错误：${err}`
+      this.percentage = `计算占用空间时发生错误：${err}`;
     }
   }
 
+  @State delBackgroundDisabled: boolean = BackgroundImage.imgPath === '';
+  @State delAvatarDisabled: boolean = BackgroundImage.avatarPath === '';
   build() {
     NavDestination() {
       Scroll() {
@@ -101,7 +105,7 @@ struct CleanStorage {
               Span(this.percentage)
                 .fontSize(30)
                 .fontWeight(FontWeight.Bolder)
-              Span(`  ${formatBytes(this.totalSize, 2, false)} / ${formatBytes(this.deviceSize)}`)
+              Span(`  ${formatBytes(this.appSize + this.dataSize + this.cacheSize, 2, false)} / ${formatBytes(this.deviceSize)}`)
                 .fontSize(13)
             }
 
@@ -118,6 +122,7 @@ struct CleanStorage {
               ComponentLabel({ cmpColor: '#F76223', cmpSize: this.dataSize, category: '数据' })
               ComponentLabel({ cmpColor: '#F772AC', cmpSize: this.cacheSize, category: '缓存' })
               ComponentLabel({ cmpColor: '#A575EB', cmpSize: this.otherSize, category: '系统和其他 App' })
+              ComponentLabel({ cmpColor: '#22c3c7c0', cmpSize: this.freeSize, category: '可用' })
             }
             .width('100%')
           }
@@ -177,11 +182,13 @@ struct CleanStorage {
             }
             .width('100%')
             .padding(8)
-            .opacity(BackgroundImage.imgPath === '' ? 0.4 : 1)
+            .opacity(this.delBackgroundDisabled ? 0.4 : 1)
             .onClick(() => {
-              if (BackgroundImage.imgPath !== '') {
+              if (!this.delBackgroundDisabled) {
+                this.delBackgroundDisabled = true;
                 BackgroundImage.deleteBackgroundImage();
                 this.getUIContext().getPromptAction().showToast({ message: $r('app.string.clear_success') });
+                this.getStorageSize();
               }
             })
 
@@ -197,11 +204,13 @@ struct CleanStorage {
             }
             .width('100%')
             .padding(8)
-            .opacity(BackgroundImage.avatarPath === '' ? 0.4 : 1)
+            .opacity(this.delAvatarDisabled ? 0.4 : 1)
             .onClick(() => {
-              if (BackgroundImage.avatarPath !== '') {
+              if (!this.delAvatarDisabled) {
+                this.delAvatarDisabled = true;
                 BackgroundImage.deleteAvatar();
                 this.getUIContext().getPromptAction().showToast({ message: $r('app.string.clear_success') });
+                this.getStorageSize();
               }
             })
 
