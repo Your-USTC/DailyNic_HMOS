@@ -3,6 +3,7 @@ import { PopoverDialog, Popup } from '@kit.ArkUI';
 import * as ScheduleSources from '../constants/ScheduleSources';
 import { classAttribute, semesterAttribute, exportSemester, exportedData } from '../constants/ScheduleSources';
 import ScheduleManager, { areClassAttributesEqual } from '../utils/Classes/ScheduleManager';
+import * as ScheduleStorage from '../utils/ScheduleStorage';
 import * as tools from '../utils/tools';
 import { weekTranslate } from '../utils/tools';
 import UnifiedPreferences, { millisecondsPerWeek } from '../utils/UnifyPreference';
@@ -405,7 +406,7 @@ struct Schedule {
             semesters: Array.from(ScheduleManager.semesters, (semester) => {
               return {
                 attribute: semester,
-                courses: JSON.parse(UnifiedPreferences.getSync('SemesterDataAt' + String(semester.createTime), '[]'))
+                courses: ScheduleStorage.getCourses(semester.createTime)
               } as exportSemester;
             })
           };
@@ -688,7 +689,7 @@ struct Schedule {
                   if (this.displayTerm === index)
                     ScheduleManager.newSemester(this.displayName + '_副本', '从「' + this.displayName + '」复制', currentTime.setHours(0, 0, 0, 0) - 86400000 * currentTime.getDay(), currentTimestamp, undefined, this.thisWeekSchedule);
                   else
-                    ScheduleManager.newSemester(this.semesters[index].name + '_副本', '从「' + this.semesters[index].name + '」复制', currentTime.setHours(0, 0, 0, 0) - 86400000 * currentTime.getDay(), currentTimestamp, undefined, JSON.parse(UnifiedPreferences.getSync('SemesterDataAt' + String(this.semesters[index].createTime))) as classAttribute[]);
+                    ScheduleManager.newSemester(this.semesters[index].name + '_副本', '从「' + this.semesters[index].name + '」复制', currentTime.setHours(0, 0, 0, 0) - 86400000 * currentTime.getDay(), currentTimestamp, undefined, ScheduleStorage.getCourses(this.semesters[index].createTime));
                   ScheduleManager.switchTempSemester(ScheduleManager.semesters.length - 1);
                   this.initSchedule();
                 })

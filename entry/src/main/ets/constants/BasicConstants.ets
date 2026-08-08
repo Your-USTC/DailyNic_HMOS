@@ -14,6 +14,7 @@ export const FULL_TIME_FORMAT: Intl.DateTimeFormatOptions = {
 
 export const currentAppVersion: string = "2.2.0";
 export const currentScheduleVersion: string = "2.1.0";
+export const currentDataVersion: string = "2.2.0";
 
 export const deviceType: string = deviceInfo.deviceType;
 

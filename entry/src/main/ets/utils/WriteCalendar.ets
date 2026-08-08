@@ -6,8 +6,8 @@ import { abilityAccessCtrl, bundleManager, PermissionRequestResult } from "@kit.
 import * as tools from './tools';
 import examManager from "./ExamManager";
 import ScheduleManager from './Classes/ScheduleManager';
+import * as ScheduleStorage from './ScheduleStorage';
 import * as ScheduleSources from '../constants/ScheduleSources';
-import UnifyPreference from './UnifyPreference';
 
 
 class WriteCalendar {
@@ -257,7 +257,7 @@ class WriteCalendar {
                       this.showMessage(`已更改为 在${value.value}提醒`);
                     }
                     // let eventId: number | undefined = undefined;
-                    const allClasses: ScheduleSources.classAttribute[] = JSON.parse(UnifyPreference.getSync('SemesterDataAt' + ScheduleManager.semesters[ScheduleManager.defaultSemester].createTime, '[]')) as ScheduleSources.classAttribute[];
+                    const allClasses: ScheduleSources.classAttribute[] = ScheduleStorage.getCourses(ScheduleManager.semesters[ScheduleManager.defaultSemester].createTime);
                     const termStart: number = ScheduleManager.semesters[ScheduleManager.defaultSemester].beginTime;
                       for (let singleClass of allClasses) { // 叠课判断
                         // 确保数组有序

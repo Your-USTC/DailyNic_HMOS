@@ -3,13 +3,8 @@ import UnifiedPreferences from '../utils/UnifyPreference';
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { examAttribute } from '../utils/ExamManager';
-import { classAttribute, semesterAttribute } from '../constants/ScheduleSources';
+import * as ScheduleStorage from '../utils/ScheduleStorage';
 import { WantAbility } from '../utils/WantAbility';
-
-interface exportClassInfo {
-  data: string,
-  termBegin: string
-}
 
 @Entry
 @Component
@@ -43,17 +38,7 @@ struct FaultOccurred {
             .onClick(() => {
               this.button1ClickTimes++;
               if (this.button1ClickTimes == 2) {
-                const semesters = JSON.parse(UnifiedPreferences.getSync('SemestersData', '[]')) as semesterAttribute[];
-                semesters.forEach(semester => {
-                  UnifiedPreferences.deleteSync('SemesterDataAt' + String(semester.createTime));
-                });
-                UnifiedPreferences.deleteSync('SemestersData');
-                UnifiedPreferences.deleteSync('DefaultSemester');
-
-                // v2.0.0 and below
-                UnifiedPreferences.deleteSync('scheduleInfo');
-                UnifiedPreferences.deleteSync('termStartTime');
-                UnifiedPreferences.deleteSync('FinalWeek');
+                ScheduleStorage.clearScheduleData();
                 this.button1Text = $r('app.string.clear_success');
               } else if (this.button1ClickTimes == 1) {
                 this.button1Text = $r('app.string.click_again_to_delete');
@@ -94,77 +79,7 @@ struct FaultOccurred {
           .margin({ top: 10 });
 
         Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center, alignContent: FlexAlign.Start }) {
-          /* Row() {
-            Row() {
-              PasteButton({ icon: PasteIconStyle.LINES, buttonType: ButtonType.Circle})
-                .size({ width: 30, height: 30 })
-                .onClick((event: ClickEvent, result: PasteButtonOnClickResult, error?: BusinessError<void>) => {
-                  if (result === PasteButtonOnClickResult.SUCCESS) {
-                    pasteboard.getSystemPasteboard().getData((err: BusinessError, pasteData: pasteboard.PasteData) => {
-                      if (err) {
-                        this.getUIContext().getPromptAction().showToast({ message: $r('app.string.import_failed') });
-                        return;
-                      }
-                      const pasteText: string = pasteData.getPrimaryText();
-                      try {
-                        const test: exportClassInfo = JSON.parse(pasteText);
-                        const checkResult: classAttribute[][][] = JSON.parse(test.data);
-                        if (typeof checkResult !== 'object' || checkResult === null) {
-                          throw new Error();
-                        }
-                        for (let layer1 of checkResult)
-                          if (layer1 != null)
-                            for (let layer2 of layer1)
-                              if (layer2 != null)
-                                for (let checker of layer2) {
-                                  if (checker.name == undefined || checker.teacher == undefined || checker.weekOfTerm == undefined
-                                    || checker.timeSpan == undefined || checker.dayOfWeek == undefined || checker.location == undefined
-                                    || checker.id == undefined || checker.color == undefined)
-                                    throw new Error();
-                                }
-                        UnifiedPreferences.putSync('scheduleInfo', test.data);
-                        UnifiedPreferences.putSync('termStartTime', test.termBegin);
-                        this.getUIContext().getPromptAction().showToast({ message: $r('app.string.import_success') });
-                      } catch (error) {
-                        this.getUIContext().showAlertDialog({
-                          title: $r('app.string.import_failed'),
-                          subtitle: $r('app.string.import_from_clipboard_failed'),
-                          message: ( pasteText === undefined ) ? $r('app.string.empty_clipboard') : $r('app.string.first_100_char_s', pasteText.slice(0, 100)),
-                          confirm:{
-                            value: "确认",
-                            action: () => {}
-                          },
-                          cancel: () => {}
-                        });
-                      }
-                    });
-                  } else {
-                    this.getUIContext().getPromptAction().showToast({ message: $r('app.string.import_failed') });
-                  }
-                });
-              Text($r('app.string.import_schedule'))
-            }
-            .margin({ right: 8 })
-
-            Button($r('app.string.export_schedule'))
-              .buttonStyle(ButtonStyleMode.TEXTUAL)
-              .onClick(() => {
-                const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, JSON.stringify({ data: UnifiedPreferences.getSync('scheduleInfo', '[[[]]]'), termBegin: UnifiedPreferences.getSync('termStartTime', '20250721') }));
-                const systemPasteboard = pasteboard.getSystemPasteboard();
-                systemPasteboard.setData(pasteboardData);
-                systemPasteboard.getData().then((data) => {
-                  if (data) {
-                    this.getUIContext().getPromptAction().showToast({ message: $r('app.string.copy_success'), duration: 1000 });
-                  } else {
-                    this.getUIContext().getPromptAction().showToast({ message: $r('app.string.copy_failed'), duration: 1000 });
-                  }
-                });
-              });
-          }
-          .margin({ top: 10 }); */
-
-          // Row() {
-            Row() {
+          Row() {
               PasteButton({ icon: PasteIconStyle.LINES, buttonType: ButtonType.Circle})
                 .size({ width: 30, height: 30 })
                 .onClick((event: ClickEvent, result: PasteButtonOnClickResult, error?: BusinessError<void>) => {
@@ -226,7 +141,6 @@ struct FaultOccurred {
                   }
                 });
               });
-          // }
         }
         .width('100%')
 

@@ -1,9 +1,8 @@
 // 用于管理多学期的 ScheduleManager
 
-import UnifyPreferences from '../UnifyPreference';
+import * as ScheduleStorage from '../ScheduleStorage';
 import { classAttribute, COVER_MODE, semesterAttribute } from '../../constants/ScheduleSources';
 import { colorSet, colorSetLen, extractCredits, getRandomInt } from '../tools';
-import { currentScheduleVersion } from '../../constants/BasicConstants';
 
 function areNumberArraysEqual(a: number[], b: number[]): boolean {
   if (a.length !== b.length) return false;
@@ -57,19 +56,18 @@ class ScheduleManager {
 
 
   constructor() {
-    if (UnifyPreferences.preferenceInstance() !== null) { this.init(); }
+    if (ScheduleStorage.isReady()) { this.init(); }
   }
 
   init() {
     // 读取所有学期的信息
-    this.semesters = JSON.parse(UnifyPreferences.getSync('SemestersData', '[]')) as semesterAttribute[];
-    this.setDefaultSemester(this.displaySemester = UnifyPreferences.getNumberSync('DefaultSemester', 0)); // 默认第一个是课表
+    this.semesters = ScheduleStorage.getSemesters();
+    this.setDefaultSemester(this.displaySemester = ScheduleStorage.getDefaultSemester()); // 默认第一个是课表
     if (this.semesters.length === 0) { // 如果是第一次使用
       const currentTime = new Date();
       this.newSemester('默认', '初始自动生成', new Date(new Date(currentTime).setDate(currentTime.getDate() - currentTime.getDay())).setHours(0, 0, 0, 0), currentTime.getTime());
     }
-    UnifyPreferences.putSync('ScheduleVersion', currentScheduleVersion); // 新增内容，后面不需要每次写入
-    this.rebuildDisplayIndex(JSON.parse(UnifyPreferences.getSync('SemesterDataAt' + String(this.semesters[this.displaySemester].createTime), '[]')) as classAttribute[]);
+    this.rebuildDisplayIndex(ScheduleStorage.getCourses(this.semesters[this.displaySemester].createTime));
   }
 
 
@@ -177,8 +175,8 @@ class ScheduleManager {
         totalWeekNum: totWeekNum
       };
       this.semesters.push(semesterConfig);
-      UnifyPreferences.putSync('SemestersData', JSON.stringify(this.semesters));
-      UnifyPreferences.putSync('SemesterDataAt' + String(createTime), JSON.stringify(timetable));
+      ScheduleStorage.setSemesters(this.semesters);
+      ScheduleStorage.setCourses(createTime, timetable);
       return;
     } catch(err) {
       return JSON.stringify(err);
@@ -195,7 +193,7 @@ class ScheduleManager {
    */
   coverExistSemester(id: number, newSchedule: classAttribute[], insertMode: COVER_MODE, fillAll: boolean = false): string | undefined {
     try {
-      const originSchedule: classAttribute[] = JSON.parse(UnifyPreferences.getSync('SemesterDataAt' + String(this.semesters[id].createTime), '[]'));
+      const originSchedule: classAttribute[] = ScheduleStorage.getCourses(this.semesters[id].createTime);
 
       if (fillAll) {
         const nameToColor: Map<string, string> = new Map<string, string>();
@@ -252,11 +250,11 @@ class ScheduleManager {
         })
       }
 
-      UnifyPreferences.putSync('SemesterDataAt' + String(this.semesters[id].createTime), JSON.stringify(newSchedule));
+      ScheduleStorage.setCourses(this.semesters[id].createTime, newSchedule);
       let latestWeek: number = this.getLatestWeek(newSchedule);
       if (latestWeek !== this.semesters[id].totalWeekNum) {
         this.semesters[id].totalWeekNum = latestWeek;
-        UnifyPreferences.putSync('SemestersData', JSON.stringify(this.semesters));
+        ScheduleStorage.setSemesters(this.semesters);
       }
       let err: string | undefined;
       if (id === this.displaySemester)
@@ -278,7 +276,7 @@ class ScheduleManager {
   switchTempSemester(target: number): string | undefined {
     try {
       this.displaySemester = target;
-      this.rebuildDisplayIndex(JSON.parse(UnifyPreferences.getSync('SemesterDataAt' + String(this.semesters[target].createTime), '[]')) as classAttribute[]);
+      this.rebuildDisplayIndex(ScheduleStorage.getCourses(this.semesters[target].createTime));
       return;
     } catch(err) {
       return JSON.stringify(err);
@@ -293,9 +291,9 @@ class ScheduleManager {
    */
   setDefaultSemester(target: number): string | undefined {
     try {
-      UnifyPreferences.putSync('DefaultSemester', target);
+      ScheduleStorage.setDefaultSemester(target);
       this.defaultSemester = target;
-      return this.rebuildDefaultIndex(JSON.parse(UnifyPreferences.getSync('SemesterDataAt' + String(this.semesters[target].createTime), '[]')));
+      return this.rebuildDefaultIndex(ScheduleStorage.getCourses(this.semesters[target].createTime));
     } catch(err) {
       return JSON.stringify(err);
     }
@@ -328,7 +326,7 @@ class ScheduleManager {
    */
   addClassToSemester(id: number, newClass: classAttribute, changeAllColor: boolean = false): string | undefined {
     try {
-      const originClass: classAttribute[] = JSON.parse(UnifyPreferences.getSync('SemesterDataAt' + String(this.semesters[id].createTime), '[]'));
+      const originClass: classAttribute[] = ScheduleStorage.getCourses(this.semesters[id].createTime);
       if (changeAllColor) {
         originClass.forEach(singleClass => {
           if (singleClass.name === newClass.name)
@@ -351,7 +349,7 @@ class ScheduleManager {
    */
   deleteClassFromSemester(id: number, removingClass: classAttribute): string | undefined {
     try {
-      const originClass: classAttribute[] = JSON.parse(UnifyPreferences.getSync('SemesterDataAt' + String(this.semesters[id].createTime), '[]'));
+      const originClass: classAttribute[] = ScheduleStorage.getCourses(this.semesters[id].createTime);
       let hasEqualClass: boolean = false;
       for (let i = originClass.length - 1; i >= 0; i--)
         if (areClassAttributesEqual(originClass[i], removingClass)) {
@@ -377,7 +375,7 @@ class ScheduleManager {
   changeSemesterStartTime(id: number, newStartTime: number): string | undefined {
     try {
       this.semesters[id].beginTime = newStartTime;
-      UnifyPreferences.putSync('SemestersData', JSON.stringify(this.semesters));
+      ScheduleStorage.setSemesters(this.semesters);
       return;
     } catch(err) {
       return JSON.stringify(err);
@@ -394,15 +392,15 @@ class ScheduleManager {
     try {
       if (id === this.displaySemester || id === this.defaultSemester)
         return 'Occupied';
-      UnifyPreferences.deleteSync('SemesterDataAt' + String(this.semesters[id].createTime));
+      ScheduleStorage.deleteSemesterData(this.semesters[id].createTime);
       if (this.displaySemester > id)
         this.displaySemester--;
       if (this.defaultSemester > id) {
         this.defaultSemester--;
-        UnifyPreferences.putSync('DefaultSemester', this.defaultSemester);
+        ScheduleStorage.setDefaultSemester(this.defaultSemester);
       }
       this.semesters.splice(id, 1);
-      UnifyPreferences.putSync('SemestersData', JSON.stringify(this.semesters));
+      ScheduleStorage.setSemesters(this.semesters);
       return;
     } catch(err) {
       return JSON.stringify(err);
@@ -419,7 +417,7 @@ class ScheduleManager {
   renameSemester(id: number, newName: string): string | undefined {
     try {
       this.semesters[id].name = newName;
-      UnifyPreferences.putSync('SemestersData', JSON.stringify(this.semesters));
+      ScheduleStorage.setSemesters(this.semesters);
       return;
     } catch(err) {
       return JSON.stringify(err);
@@ -493,8 +491,8 @@ class ScheduleManager {
         this.semesters[i] = this.semesters[i - 1];
       }
       this.semesters[0] = targetSemester;
-      UnifyPreferences.putSync('SemestersData', JSON.stringify(this.semesters));
-      UnifyPreferences.putSync('DefaultSemester', this.defaultSemester); // 不需要rebuildIndex（内容不变），因此不调用this.setDefaultSemester()
+      ScheduleStorage.setSemesters(this.semesters);
+      ScheduleStorage.setDefaultSemester(this.defaultSemester); // 不需要rebuildIndex（内容不变），因此不调用this.setDefaultSemester()
       return;
     } catch(err) {
       return JSON.stringify(err);

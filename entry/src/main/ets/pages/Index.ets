@@ -134,31 +134,6 @@ struct Index {
     } else if (UnifiedPreferences.getSync('AppVersion') !== currentAppVersion) {
       this.getUIContext().getRouter().pushUrl({ url: 'pages/UpdateLog' })
         .catch((err: Error) => { console.error(`Router ERROR: [${err.name}] ${err.message}`) });
-
-      if (UnifiedPreferences.hasSync('scheduleInfo')) { // scheduleInfo键是 2.1.0（不含）以前专用的，因此不需要读取版本号
-        const legacySchedule: ScheduleSources.classAttribute[][][] = JSON.parse(UnifiedPreferences.getSync('scheduleInfo', '[[[]]]'));
-        const convertSchedule: ScheduleSources.classAttribute[] = [];
-        legacySchedule.forEach(layer1 => {
-          layer1?.forEach(layer2 => {
-            layer2?.forEach(layer3 => {
-              if (layer3) {
-                const result: string[] = tools.extractCredits(layer3.id);
-                layer3.id = result[0];
-                layer3.credits = result[1];
-                layer3.dayOfWeek = (layer3.dayOfWeek + 1) % 7;
-                convertSchedule.push(layer3);
-              }
-            });
-          });
-        });
-        ScheduleManager.newSemester('App 旧版本保存的课表', '从版本 ' + UnifiedPreferences.getSync('AppVersion', '2.0.0') + ' 自动转换', Number(UnifiedPreferences.getSync('termStartTime', '20250721')), Date.now(), undefined, convertSchedule);
-        ScheduleManager.setDefaultSemester(ScheduleManager.semesters.length - 1);
-        ScheduleManager.switchTempSemester(ScheduleManager.semesters.length - 1);
-        UnifiedPreferences.deleteSync('termStartTime');
-        UnifiedPreferences.deleteSync('scheduleInfo');
-        UnifiedPreferences.deleteSync('FinalWeek');
-        this.refreshInfo();
-      }
     }
   }
 
