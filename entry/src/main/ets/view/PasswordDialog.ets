@@ -22,7 +22,7 @@ export default struct PasswordDialog {
   private showDelButton: boolean = false;
   isFromSetting: boolean= true;
 
-  @Link refreshUsername: string;
+  @Consume displayUsername: string;
   onConfirm: () => void = () => {};
 
   @State passwordState: boolean = false;
@@ -211,8 +211,7 @@ export default struct PasswordDialog {
               UnifiedPreferences.deleteSync(PASSWORD_KEY);
             else
               UnifiedPreferences.putSync(PASSWORD_KEY, accountInfoProvider.encryptPassword(this.inputPassword));
-            if (this.refreshUsername)
-              this.refreshUsername = this.inputUID;
+            this.displayUsername = this.inputUID;
 
             if (this.inputUID === '' || this.inputPassword === '') {
               this.getUIContext().getPromptAction().showToast({ message: $r('app.string.cannot_fill') });

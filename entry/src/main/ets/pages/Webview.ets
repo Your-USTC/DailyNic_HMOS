@@ -47,12 +47,10 @@ struct Webview {
   haveJumped: boolean = true;
   // @State infoProvider: accountInfoProvider = new accountInfoProvider();
   haveTriedLogin: boolean = false;
-  @State useless: string = '';
   dialogController: CustomDialogController = new CustomDialogController({
     builder: PasswordDialog({
       isFromSetting: false,
       onConfirm: () => { this.webviewController.runJavaScript(fillInformationJS, (error, result) => {}); },
-      refreshUsername: this.useless
     }),
     autoCancel: true
   })

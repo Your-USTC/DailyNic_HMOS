@@ -41,11 +41,10 @@ struct Index {
   @State currentIndex: number = 0; // 当前标签索引 (从0开始), 初始值即为默认标签索引
   private tabsController: HdsTabsController = new HdsTabsController();
 
-  @State displayUsername: string = accountInfoProvider.getUID();
+  @Provide displayUsername: string = accountInfoProvider.getUID();
   dialogController: CustomDialogController = new CustomDialogController({
     builder: PasswordDialog({
       isFromSetting: true,
-      refreshUsername: this.displayUsername
     }),
     autoCancel: false,
     gridCount: 4
