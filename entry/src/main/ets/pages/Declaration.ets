@@ -78,20 +78,16 @@ struct Declaration {
               .fontColor($r('app.color.red'))
           }
 
-          Text($r('app.string.no_association3'))
-            .copyOption(CopyOptions.InApp)
-          TextArea()
-            .maxLines(4)
-            .onChange((value: string) => {
-              if (value === '我已知晓并承认“妮可之记”由中科大学生独立开发，与中国科学技术大学官方无任何关联') {
-                this.knowIndependence = true;
-              }
-            })
-          Text($r('app.string.no_association4'))
-            .fontColor($r('app.color.green'))
-            .visibility(this.knowIndependence ? Visibility.Visible : Visibility.Hidden)
+          Row() {
+            Checkbox()
+              .onChange((value: boolean) => {
+                this.knowIndependence = value;
+              })
+            Text($r('app.string.no_association3'))
+              .constraintSize({ maxWidth: '90%' })
+          }
         }
-        .justifyContent(FlexAlign.Center)
+        .justifyContent(FlexAlign.SpaceAround)
         .padding(15)
         .height('100%')
         .width('100%')

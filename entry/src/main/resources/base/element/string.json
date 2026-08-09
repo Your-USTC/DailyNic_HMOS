@@ -857,8 +857,8 @@
       "value": "导入失败"
     },
     {
-      "name": "delete_all_data",
-      "value": "删除所有数据"
+      "name": "delete_preference",
+      "value": "删除首选项"
     },
     {
       "name": "delete_exam_info",
@@ -910,11 +910,7 @@
     },
     {
       "name": "no_association3",
-      "value": "请将「我已知晓并承认“妮可之记”由中科大学生独立开发，与中国科学技术大学官方无任何关联」输入到下面的文本框中。如果您不想打字，可以长按选中文字，并拖动到下面的文本框中。"
-    },
-    {
-      "name": "no_association4",
-      "value": "✔\uFE0F 您已输入过这句话"
+      "value": "我已知晓并承认“妮可之记”由中科大学生独立开发，与中国科学技术大学官方无任何关联"
     },
     {
       "name": "choose_school",

@@ -4,6 +4,7 @@ import { BusinessError, pasteboard } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { examAttribute } from '../utils/ExamManager';
 import * as ScheduleStorage from '../utils/ScheduleStorage';
+import * as ExamStorage from '../utils/ExamStorage';
 import { WantAbility } from '../utils/WantAbility';
 
 @Entry
@@ -13,7 +14,7 @@ struct FaultOccurred {
   private button2ClickTimes: number = 0;
   private button3ClickTimes: number = 0;
   @State button1Text: ResourceStr = $r('app.string.delete_schedule');
-  @State button2Text: ResourceStr = $r('app.string.delete_all_data');
+  @State button2Text: ResourceStr = $r('app.string.delete_preference');
   @State button3Text: ResourceStr = $r('app.string.delete_exam_info');
 
   build() {
@@ -62,7 +63,7 @@ struct FaultOccurred {
             .onClick(() => {
               this.button3ClickTimes++;
               if (this.button3ClickTimes == 2) {
-                UnifiedPreferences.deleteSync('examInfo');
+                ExamStorage.clearExamData();
                 this.button3Text = $r('app.string.clear_success');
               } else if (this.button3ClickTimes == 1) {
                 this.button3Text = $r('app.string.click_again_to_delete');
@@ -104,7 +105,7 @@ struct FaultOccurred {
                             || !/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}~\d{2}:\d{2}$/.test(singleData.date)) {
                             throw new Error();
                           }
-                        UnifiedPreferences.putSync('examInfo', pasteText);
+                        ExamStorage.setExams(parsedData);
                         this.getUIContext().getPromptAction().showToast({ message: $r('app.string.import_success') });
                       } catch (error) {
                         this.getUIContext().showAlertDialog({
