@@ -235,6 +235,22 @@
     {
       "name": "version_2_2_0_fix",
       "value": "\u2460 叒一次优化了 UI 细节及部分图标。\n\u2461 修复了不处于学期进行时状态时，桌面卡片会错误地显示第一周课程的问题。\n\u2462 压缩了少许 App 体积。"
+    },
+    {
+      "name": "version_2_2_1_date",
+      "value": "\uDB81\uDEC4 2.2.1  |  发布日期：????年??月??日"
+    },
+    {
+      "name": "version_2_2_1_extra",
+      "value": ""
+    },
+    {
+      "name": "version_2_2_1_feat",
+      "value": ""
+    },
+    {
+      "name": "version_2_2_1_fix",
+      "value": "\u2460 修复了无法进行按周数跳转的问题。"
     }
   ]
 }

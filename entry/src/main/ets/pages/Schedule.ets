@@ -1278,7 +1278,7 @@ struct Schedule {
               selected: this.weekDisplayed - 1,
               canLoop: false,
               onAccept: (value: TextPickerResult) => {
-                const toJump: number = Number(value.value);
+                const toJump: number = (typeof value.index === "number" ? value.index : value.index[0]) + 1;
                 this.weekStart = this.weekStart + millisecondsPerWeek * (toJump - this.weekDisplayed);
                 this.weekDisplayed = toJump;
                 this.refreshGrid();
