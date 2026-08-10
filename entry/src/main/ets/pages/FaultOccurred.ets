@@ -2,7 +2,7 @@
 import UnifiedPreferences from '../utils/UnifyPreference';
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
-import { examAttribute } from '../utils/ExamManager';
+import { examAttribute } from '../utils/ExamStorage';
 import * as ScheduleStorage from '../utils/ScheduleStorage';
 import * as ExamStorage from '../utils/ExamStorage';
 import { WantAbility } from '../utils/WantAbility';
@@ -131,7 +131,7 @@ struct FaultOccurred {
             Button($r('app.string.export_exam'))
               .buttonStyle(ButtonStyleMode.TEXTUAL)
               .onClick(() => {
-                const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, `${UnifiedPreferences.getSync('examInfo', '[]')}`);
+                const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, `${JSON.stringify(ExamStorage.getExams())}`);
                 const systemPasteboard = pasteboard.getSystemPasteboard();
                 systemPasteboard.setData(pasteboardData);
                 systemPasteboard.getData().then((data) => {

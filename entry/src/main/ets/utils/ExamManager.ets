@@ -1,21 +1,6 @@
+import * as ExamStorage from './ExamStorage';
 
-import UnifiedPreferences from './UnifyPreference';
-
-export interface examAttribute {
-  id: string,
-  type: string,
-  name: string,
-  date: string,
-  classroom: string,
-  building: string,
-  campus: string,
-  info: string,
-  beginTimeStamp: number,
-  endTimeStamp: number,
-  importance: number
-}
-
-export function areExamAttributesEqual(a: examAttribute, b: examAttribute): boolean {
+export function areExamAttributesEqual(a: ExamStorage.examAttribute, b: ExamStorage.examAttribute): boolean {
   // 基本类型直接比较
   if (a.id !== b.id) return false;
   if (a.type !== b.type) return false;
@@ -31,17 +16,13 @@ export function areExamAttributesEqual(a: examAttribute, b: examAttribute): bool
 }
 
 class examManager {
-  allExamInfo: examAttribute[] = [];
+  allExamInfo: ExamStorage.examAttribute[] = [];
 
   readStoredExam() {
-    let data = UnifiedPreferences.getSync('examInfo', '');
-    if (data === '')
-      this.allExamInfo = [];
-    else
-      this.allExamInfo = JSON.parse(data);
+    this.allExamInfo = ExamStorage.getExams();
   }
 
-  storeExam(data: examAttribute[]) {
+  storeExam(data: ExamStorage.examAttribute[]) {
     for (let i = 0; i < data.length; i++) {
       data[i].beginTimeStamp = new Date(data[i].date.slice(0, 16)).getTime();
       data[i].endTimeStamp = new Date(data[i].date.slice(0, 11) + data[i].date.slice(17, 22)).getTime();
@@ -54,10 +35,10 @@ class examManager {
       }
       return a.beginTimeStamp - b.beginTimeStamp;
     });
-    UnifiedPreferences.putSync('examInfo', JSON.stringify(data));
+    ExamStorage.setExams(data);
   }
 
-  addExam(newExam: examAttribute) {
+  addExam(newExam: ExamStorage.examAttribute) {
     newExam.beginTimeStamp = new Date(newExam.date.slice(0, 16)).getTime();
     newExam.endTimeStamp = new Date(newExam.date.slice(0, 11) + newExam.date.slice(17, 22)).getTime();
     this.allExamInfo.push(newExam);
@@ -67,10 +48,10 @@ class examManager {
       }
       return a.beginTimeStamp - b.beginTimeStamp;
     });
-    UnifiedPreferences.putSync('examInfo', JSON.stringify(this.allExamInfo));
+    ExamStorage.setExams(this.allExamInfo);
   }
 
-  deleteExam(deletedExam: examAttribute) {
+  deleteExam(deletedExam: ExamStorage.examAttribute) {
     for (let i = this.allExamInfo.length - 1; i >= 0; i--)
       if (areExamAttributesEqual(deletedExam, this.allExamInfo[i])) {
         this.allExamInfo.splice(i, 1);

@@ -1,6 +1,6 @@
 import { CardListComponent } from '../view/CardListComponent';
 import { CardListParameter } from '../viewmodel/CardListParameter';
-import { examAttribute } from '../../utils/ExamManager';
+import { examAttribute } from '../../utils/ExamStorage';
 import * as tools from '../../utils/tools';
 
 let localStorage = new LocalStorage();

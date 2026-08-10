@@ -6,6 +6,7 @@ import { router, window } from '@kit.ArkUI';
 import UnifiedPreferences from '../utils/UnifyPreference';
 import * as FunctionOrder from '../utils/FunctionOrder';
 import * as ScheduleStorage from '../utils/ScheduleStorage';
+import * as ExamStorage from '../utils/ExamStorage';
 import { migrate } from '../utils/MigrationManager';
 
 const DOMAIN = 0x0000;
@@ -21,6 +22,7 @@ export default class EntryAbility extends UIAbility {
     UnifiedPreferences.init(this.context);
     FunctionOrder.init(this.context);
     ScheduleStorage.init(this.context);
+    ExamStorage.init(this.context);
     migrate();
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
     if (want?.parameters?.router) {

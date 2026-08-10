@@ -1,6 +1,7 @@
 import UnifiedPreferences from './UnifyPreference';
 import * as FunctionOrder from './FunctionOrder';
 import * as ScheduleStorage from './ScheduleStorage';
+import * as ExamStorage from './ExamStorage';
 import { classAttribute, semesterAttribute } from '../constants/ScheduleSources';
 import { LINK } from '../constants/Links';
 import { currentDataVersion } from '../constants/BasicConstants';
@@ -63,6 +64,17 @@ function migrateV211ToV220(): void {
     ScheduleStorage.importLegacyData(UnifiedPreferences.getNumberSync('DefaultSemester', 0), attributes, coursesByCreateTime);
     UnifiedPreferences.deleteSync('SemestersData');
     UnifiedPreferences.deleteSync('DefaultSemester');
+  }
+
+  // 考试（examInfo）迁入 examData.json
+  if (UnifiedPreferences.hasSync('examInfo')) {
+    try {
+      const legacyExam: ExamStorage.examAttribute[] = JSON.parse(UnifiedPreferences.getSync('examInfo', '[]')) as ExamStorage.examAttribute[];
+      ExamStorage.importLegacyData(legacyExam);
+    } catch (e) {
+      console.error('MigrationManager: failed to parse legacy exam:', JSON.stringify(e));
+    }
+    UnifiedPreferences.deleteSync('examInfo');
   }
 
   // 重置提示

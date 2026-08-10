@@ -1,9 +1,9 @@
 
-import { CounterComponent, CounterType, LengthUnit } from '@kit.ArkUI'
+import { CounterComponent, CounterType } from '@kit.ArkUI'
 import * as tools from '../utils/tools'
-import examManager, { examAttribute, areExamAttributesEqual } from '../utils/ExamManager';
+import examManager, { areExamAttributesEqual } from '../utils/ExamManager';
+import { examAttribute } from '../utils/ExamStorage';
 import BackgroundImage, { presetColor } from '../utils/BgImageManager';
-import { i18n } from '@kit.LocalizationKit';
 import { FULL_TIME_FORMAT } from '../constants/BasicConstants';
 import MessageDialog from '../view/MessageDialog';
 
