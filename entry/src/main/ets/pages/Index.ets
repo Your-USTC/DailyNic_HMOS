@@ -26,6 +26,12 @@ import { getAllTest, removeTest } from '../utils/MockPractice/TestManager'
 import { hdsMaterial, HdsNavigation, HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
 import accountInfoProvider from '../utils/Encryption'
 import { LinkSet, LINK, SimpleLink, MultiLink } from '../constants/Links'
+import { COOKIE_REPO_ID, fetchCookie, SESSION } from "../utils/clients/utils";
+import { rcp } from "@kit.RemoteCommunicationKit";
+import { hilog } from "@kit.PerformanceAnalysisKit";
+import { catalogClient } from "../utils/clients/CatalogClient";
+
+const DOMAIN = 0x0001;
 
 // 滚动条参数
 enum ScrollPosition {
@@ -60,14 +66,23 @@ struct Index {
    * @param selectedImg 按钮图片 (选中时)
    * @param normalImg 按钮图片 (未选中时)
    */
-  @Builder tabBuilder(title: string | Resource, index: number, selectedImg: Resource, normalImg: Resource) {
+  @Builder tabBuilder(title: string | Resource, index: number, selectedImg: Resource, normalImg: Resource, notice: boolean = false) {
     Column() {
       // 按钮图片
-      Image(this.currentIndex === index ? selectedImg : normalImg)
-        .width(28)
-        .height(28)
-        .objectFit(ImageFit.Contain)
-        .draggable(false)
+      Stack({ alignContent: Alignment.TopEnd }) {
+        Image(this.currentIndex === index ? selectedImg : normalImg)
+          .width(28)
+          .height(28)
+          .objectFit(ImageFit.Contain)
+          .draggable(false);
+        if(notice) {
+          Circle()
+            .width(10)
+            .height(10)
+            .fill($r("sys.color.warning"))
+            .margin({ top: -2, right: -2 })
+        }
+      }
       // 按钮文字
       Text(title)
         .fontSize(10)
@@ -95,6 +110,7 @@ struct Index {
   @State tomorrowCourse: ScheduleSources.classAttribute[] = [];
   @State exams: examAttribute[] = [];
 
+  @State needLogin: boolean = false;
   @State showCheckIn: boolean = UnifiedPreferences.getBoolSync('showCheckIn', true);
   @State showRecentCourse: boolean = UnifiedPreferences.getBoolSync('showRecentCourse', true);
   @State showExamDetail: boolean = UnifiedPreferences.getBoolSync('showExamDetail', true);
@@ -161,6 +177,14 @@ struct Index {
         this.refreshInfo();
       }
     }
+
+    this.checkLogin();
+  }
+
+  private async checkLogin() {
+    await fetchCookie(DOMAIN);
+    const response = await SESSION.get("https://id.ustc.edu.cn/gate/cas-success");
+    this.needLogin = !(response.statusCode < 300 && response.effectiveUrl?.toString().includes("/gate/cas-success")) ?? true;
   }
 
   /**
@@ -897,9 +921,16 @@ struct Index {
           .height(36)
           .onClick(() => {
             this.pageInfo.clear();
-            this.pageInfo.pushPath({ name: "Webview", param: {
-              title: $r('app.string.GeRenZhongXin'),
-              url: 'https://id.ustc.edu.cn/gate/cas-success/personal-center-home-page' } as SimpleLink });
+            // this.pageInfo.pushPath({ name: "Webview", param: {
+            //   title: $r('app.string.GeRenZhongXin'),
+            //   url: 'https://id.ustc.edu.cn/gate/cas-success/personal-center-home-page' } as SimpleLink });
+            this.pageInfo.pushPath({
+              name: "LoginWebview",
+              onPop: async() => {
+                await this.checkLogin();
+                await catalogClient.getSemesters();
+              }
+            });
           })
         }
         .width('100%')
@@ -1078,8 +1109,11 @@ struct Index {
           }
           .padding({ left: 7, right: 7 })
           .backgroundColor(BackgroundImage.showImage ? undefined : $r('app.color.normal_background'))
-          .tabBar(this.tabBuilder($r('app.string.page_settings'), 2, $r('app.media.tab2_selected'),
-            $r('app.media.tab2_unselected')))
+          .tabBar(
+            this.needLogin ?
+            this.tabBuilder($r('app.string.page_settings'), 2, $r('app.media.tab2_selected'), $r('app.media.tab2_unselected'), true)
+              : this.tabBuilder($r('app.string.page_settings'), 2, $r('app.media.tab2_selected'), $r('app.media.tab2_unselected'))
+          )
           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
 
         }

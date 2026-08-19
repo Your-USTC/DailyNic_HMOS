@@ -1,6 +1,8 @@
 import { common } from "@kit.AbilityKit";
 import { fileIo, fileUri, picker } from "@kit.CoreFileKit";
 import { BusinessError } from "@kit.BasicServicesKit";
+import { LessonInfo } from "./ScheduleData";
+import { commonClassStamp } from "../constants/ScheduleSources";
 
 /**
  * 提取文件路径的扩展名（不含分隔符`.`）
@@ -100,8 +102,10 @@ export function stringToRgba(color: string): number[] {
   return [a, r, g, b];
 }
 
-export const weekTranslate: ResourceStr[] = [$r('app.string.sunday'), $r('app.string.monday'), $r('app.string.tuesday'), $r('app.string.wednesday'),
-  $r('app.string.thursday'), $r('app.string.friday'), $r('app.string.saturday')];
+export const weekTranslate: ResourceStr[] = [$r('app.string.Sunday'), $r('app.string.Monday'), $r('app.string.Tuesday'), $r(
+  'app.string.Wednesday'),
+                                             $r('app.string.Thursday'), $r('app.string.Friday'), $r(
+                                               'app.string.Saturday')];
 
 export function getRandomInt(min: number, max: number): number {
   min = Math.ceil(min);
@@ -152,19 +156,6 @@ export function getClassTimestamp(termBeginDate: number, week: number, day: numb
     + (week - 1) * 604800000    // 第几周
     + day * 86400000            // 第几天，不-1是因为教务系统中一周从周日开始
     + surplus;                  // 第几节课结束
-}
-
-function timestampToDateTime(timestamp: number, format: string = 'yyyy-MM-DD'): string {
-  const date = new Date(timestamp);
-
-  const year = date.getFullYear().toString();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-
-  return format
-    .replace('yyyy', year)
-    .replace('MM', month)
-    .replace('DD', day);
 }
 
 export function areNumberArraysEqual(arr1: number[], arr2: number[]): boolean {
@@ -343,6 +334,52 @@ export async function readStringFromFile(context: UIContext, suffixChoices: stri
   } catch(err) {
     return 'null';
   }
+}
+
+export function handleOverlappedLessons(lessons: LessonInfo[]): Array<LessonInfo | LessonInfo[]> {
+  return lessons.sort((a, b) => (a.weekday - b.weekday) || (a.start - b.start))
+    .reduce((acc, l) => {
+      const p = acc.length > 0 ? acc[acc.length - 1] : undefined;
+      if(Array.isArray(p)) {
+        if(p.some(a => a.weekday === l.weekday && a.end > l.start)) {
+          p.push(l);
+        } else {
+          acc.push(l);
+        }
+      } else if(p?.weekday === l.weekday && p.end > l.start) {
+        acc.pop();
+        acc.push([p, l]);
+      } else {
+        acc.push(l);
+      }
+      return acc;
+    }, [] as Array<LessonInfo | LessonInfo[]>);
+}
+
+export function time2Seconds(time: string): number {
+  const hs = time.split(':').map(Number);
+  return hs.length === 2 ? hs[0] * 3600 + hs[1] * 60 : 0;
+}
+
+export function seconds2Time(seconds: number): string {
+  return `${Math.floor(seconds / 3600).toString().padStart(2, "0")}:${(seconds % 3600 / 60).toString().padStart(2, "0")}`;
+}
+
+export function time2Percent(time: number, regionLeft?: number, regionRight?: number): number {
+  regionLeft = regionLeft ?? commonClassStamp[1][0] / 1000;
+  regionRight = regionRight ?? commonClassStamp[14][1] / 1000;
+  let total = 0, acc = 0;
+  commonClassStamp.slice(1).forEach(se => {
+    let left = Math.max(se[0] / 1000, regionLeft!), right = Math.min(se[1] / 1000, regionRight!);
+    if(right > left) {
+      total += right - left;
+    }
+    let accRight = Math.min(se[1] / 1000, time);
+    if(accRight > left) {
+      acc += accRight - left;
+    }
+  })
+  return acc / total * 100;
 }
 
 export const fillInformationJS = `

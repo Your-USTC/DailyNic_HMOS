@@ -177,31 +177,31 @@
       "value": "晚上"
     },
     {
-      "name": "monday",
+      "name": "Monday",
       "value": "星期一"
     },
     {
-      "name": "tuesday",
+      "name": "Tuesday",
       "value": "星期二"
     },
     {
-      "name": "wednesday",
+      "name": "Wednesday",
       "value": "星期三"
     },
     {
-      "name": "thursday",
+      "name": "Thursday",
       "value": "星期四"
     },
     {
-      "name": "friday",
+      "name": "Friday",
       "value": "星期五"
     },
     {
-      "name": "saturday",
+      "name": "Saturday",
       "value": "星期六"
     },
     {
-      "name": "sunday",
+      "name": "Sunday",
       "value": "星期日"
     },
     {
@@ -502,7 +502,7 @@
     },
     {
       "name": "class_detail_time",
-      "value": "节数："
+      "value": "时间："
     },
     {
       "name": "class_detail_weeks",
@@ -1087,6 +1087,18 @@
     {
       "name": "exam_info_display_name",
       "value": "考试信息"
+    },
+    {
+      "name": "none",
+      "value": "无"
+    },
+    {
+      "name": "select_semesters",
+      "value": "选择学期"
+    },
+    {
+      "name": "overlapped",
+      "value": "多节课"
     }
   ]
 }

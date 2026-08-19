@@ -4,6 +4,13 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { router, window } from '@kit.ArkUI';
 
 import UnifiedPreferences from '../utils/UnifyPreference';
+import { scheduleManager } from "../utils/storage/ScheduleManager";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import isBetween from 'dayjs/plugin/isBetween';
+import weekday from 'dayjs/plugin/weekday';
+import localeData from "dayjs/plugin/localeData";
+import "dayjs/locale/zh-cn";
 
 const DOMAIN = 0x0000;
 
@@ -16,6 +23,11 @@ export default class EntryAbility extends UIAbility {
       console.error('onCreate ERROR: ' + JSON.stringify(error))
     }
     UnifiedPreferences.init(this.context);
+    scheduleManager.init(this.context);
+    dayjs.extend(utc);
+    dayjs.extend(isBetween);
+    dayjs.extend(weekday);
+    dayjs.extend(localeData);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
     if (want?.parameters?.router) {
       this.routerPath = want.parameters.router.toString();
@@ -24,6 +36,7 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     UnifiedPreferences.putSync('FaultOccurred', false);
+    scheduleManager.deinit();
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 

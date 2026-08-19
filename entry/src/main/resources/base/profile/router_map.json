@@ -11,9 +11,9 @@
       "buildFunction": "ExamBuilder"
     },
     {
-      "name": "GetSchedule",
-      "pageSourceFile": "src/main/ets/pages/GetSchedule.ets",
-      "buildFunction": "GetBuilder"
+      "name": "LoginWebview",
+      "pageSourceFile": "src/main/ets/pages/LoginWebview.ets",
+      "buildFunction": "loginViewBuilder"
     },
     {
       "name": "About",
