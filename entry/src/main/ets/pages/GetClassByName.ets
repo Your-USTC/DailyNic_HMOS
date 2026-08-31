@@ -195,50 +195,56 @@ struct GetClassByName {
                   .borderRadius(20)
                   .backgroundColor($r('app.color.grid_background'))
                   .onClick(() => {
-                    const lines: string[] = item.item.dateTimePlacePersonText.cn.split('\n').filter(line => line.trim() !== '');
-                    const color: string = colorSet[getRandomInt(0, colorSetLen - 1)];
-                    const regex = /^([\d,~]+周)\s+(\S+)\s*:\s*(\d+)\(([\d,]+)\)\s+(.+)$/;
-                    for (let idx = 0; idx < lines.length; idx++) {
-                      const line = lines[idx];
-                      const match = line.match(regex);
-                      if (!match) {
-                        console.warn(`跳过无法解析的行: ${line}`);
-                        continue;
+                    try {
+                      const lines: string[] = item.item.dateTimePlacePersonText.cn.split('\n')
+                        .filter(line => line.trim() !== '');
+                      const color: string = colorSet[getRandomInt(0, colorSetLen - 1)];
+                      const regex = /^([\d,~]+周)\s+(\S+)\s*:\s*(\d+)\(([\d,]+)\)\s+(.+)$/;
+                      for (let idx = 0; idx < lines.length; idx++) {
+                        const line = lines[idx];
+                        const match = line.match(regex);
+                        if (!match) {
+                          console.warn(`跳过无法解析的行: ${line}`);
+                          continue;
+                        }
+
+                        const weekRange = match[1];
+                        const location = match[2];
+                        const dayStr = match[3];
+                        const sectionsStr = match[4];
+                        const teacher = match[5];
+
+                        // 1. 解析周次（支持混合格式）
+                        const weeks = parseWeeks(weekRange);
+
+                        // 2. 星期（7 → 0）
+                        let day = parseInt(dayStr, 10);
+                        if (day === 7) day = 0;
+
+                        // 3. 节次
+                        const sections = sectionsStr.split(',').map(s => parseInt(s, 10));
+
+                        // 4. 构建 classAttribute 对象
+                        const newClass: classAttribute = {
+                          name: item.item.course.cn || '无数据',
+                          teacher: teacher || '无数据',
+                          weekOfTerm: weeks,
+                          timeSpan: sections,
+                          dayOfWeek: day,
+                          location: location.trim(),
+                          id: item.item.code,
+                          color: color,
+                          priority: 5,
+                          credits: item.item.credits.toString(),
+                        };
+                        ScheduleManager.addClassToSemester(ScheduleManager.displaySemester, newClass);
                       }
-
-                      const weekRange = match[1];
-                      const location = match[2];
-                      const dayStr = match[3];
-                      const sectionsStr = match[4];
-                      const teacher = match[5];
-
-                      // 1. 解析周次（支持混合格式）
-                      const weeks = parseWeeks(weekRange);
-
-                      // 2. 星期（7 → 0）
-                      let day = parseInt(dayStr, 10);
-                      if (day === 7) day = 0;
-
-                      // 3. 节次
-                      const sections = sectionsStr.split(',').map(s => parseInt(s, 10));
-
-                      // 4. 构建 classAttribute 对象
-                      const newClass: classAttribute = {
-                        name: item.item.course.cn || '无数据',
-                        teacher: teacher || '无数据',
-                        weekOfTerm: weeks,
-                        timeSpan: sections,
-                        dayOfWeek: day,
-                        location: location.trim(),
-                        id: item.item.code,
-                        color: color,
-                        priority: 5,
-                        credits: item.item.credits.toString(),
-                      };
-                      ScheduleManager.addClassToSemester(ScheduleManager.displaySemester, newClass);
+                      this.exceptionPromptText = '(点此隐藏)添加成功';
+                      this.showExceptionPrompt = true;
+                    } catch (e) {
+                      this.exceptionPromptText = '(点此隐藏)由于格式问题或教务系统数据缺失，暂不支持添加此课程，请手动添加'
+                      this.showExceptionPrompt = true;
                     }
-                    this.exceptionPromptText = '(点此隐藏)添加成功';
-                    this.showExceptionPrompt = true;
                   })
                 }
                 .margin({ top: 4 })

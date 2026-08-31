@@ -89,15 +89,31 @@ struct Schedule {
         message: { text: $r('app.string.pinch_to_scale') },
         showClose: false,
         buttons: [{
-          text: $r('app.string.no_reminding'),
+          text: $r('app.string.next_hint'),
           action: () => {
-            UnifiedPreferences.putSync('ShowPinchHint', false);
             this.showPinchHint = false;
+            this.showSemHint = true;
           }
         }]
       })
     }
   }
+  @State showSemHint: boolean = false;
+  @Builder semHintPopup() {
+    Row() {
+      Popup({
+        icon: { image: $r('app.media.lightbulb') },
+        message: { text: $r('app.string.semester_dialog_hint') },
+        showClose: false,
+        buttons: [{
+          text: $r('app.string.no_reminding'),
+          action: () => {
+            UnifiedPreferences.putSync('ShowPinchHint', false);
+            this.showSemHint = false;
+          }
+        }]
+      })
+    }}
   @State showColorHint: boolean = false;
   @Builder colorHintPopup() {
     Row() {
@@ -1169,6 +1185,15 @@ struct Schedule {
             .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
         .layoutWeight(1)
+        .bindSheet($$this.showSemesters, this.SemesterDetail(), {
+          // 如果与 gridItem 绑定，会弹出很多个！
+          detents: [SheetSize.LARGE, SheetSize.MEDIUM],
+          preferType: SheetType.CENTER,
+          showClose: false,
+          scrollSizeMode: ScrollSizeMode.FOLLOW_DETENT,
+          backgroundColor: '#00d00721',
+          blurStyle: BlurStyle.Regular
+        })
 
         Badge({ count: this.conflictSchedule.length, style: { badgeSize: 15, badgeColor: /*'#FA2A2D'*/$r('sys.color.ohos_id_color_badge_red') } }) {
           Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
@@ -1206,14 +1231,15 @@ struct Schedule {
         .onClick(() => {
           this.showSemesters = true;
         })
-        .bindSheet($$this.showSemesters, this.SemesterDetail(), {
-          // 如果与 gridItem 绑定，会弹出很多个！
-          detents: [SheetSize.LARGE, SheetSize.MEDIUM],
-          preferType: SheetType.CENTER,
-          showClose: false,
-          scrollSizeMode: ScrollSizeMode.FOLLOW_DETENT,
-          backgroundColor: '#00d00721',
-          blurStyle: BlurStyle.Regular
+        .bindPopup(this.showSemHint, {
+          builder: this.semHintPopup(),
+          placement: Placement.BottomRight,
+          width: 300,
+          onStateChange: (status: PopupOnStateChangeInfo) => {
+            if (!status.isVisible) {
+              this.showSemHint = false;
+            }
+          }
         })
 
         Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
@@ -1238,7 +1264,7 @@ struct Schedule {
           .fontSize(14)
           .bindPopup(this.showCalendarHint, {
             builder: this.calendarHintPopup(),
-            placement: Placement.Bottom,
+            placement: Placement.BottomLeft,
             width: 300,
             onStateChange: (status: PopupOnStateChangeInfo) => {
               if (!status.isVisible) {
