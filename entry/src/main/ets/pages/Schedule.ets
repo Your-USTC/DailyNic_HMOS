@@ -354,7 +354,7 @@ struct Schedule {
         });
       MenuItem({ content: $r('app.string.search_in_all_courses'), startIcon: $r('app.media.search') })
         .onClick(() => {
-          this.pathStack.pushPath({ name: 'GetClassByName' })
+          this.pathStack.pushPath({ name: 'GetClassByName' });
         });
       MenuItem({ startIcon: $r('app.media.archive'), content: "导入和导出", builder: this.archiveMenu() })
     }
@@ -812,7 +812,8 @@ struct Schedule {
       }
     }
   }
-  
+
+  // 不含显示 Grid 课表！
   initSchedule() {
     const currentTime = new Date();
     this.displayTerm = ScheduleManager.displaySemester;
@@ -826,7 +827,6 @@ struct Schedule {
       this.currentWeekStart = this.weekStart = new Date(new Date(currentTime).setDate(currentTime.getDate() - currentTime.getDay())).setHours(0, 0, 0, 0);
     }
     this.displayName = this.semesters[this.displayTerm].name;
-    this.refreshGrid();
   }
 
   pathStack: NavPathStack = new NavPathStack();
@@ -1089,6 +1089,9 @@ struct Schedule {
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       this.initSchedule();
+    })
+    .onShown(() => {
+      this.refreshGrid();
       setTimeout(() => this.showXiuHint = UnifiedPreferences.getBoolSync('ShowPinchHint', true), 0);
     });
   }
