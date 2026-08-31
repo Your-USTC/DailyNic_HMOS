@@ -348,6 +348,7 @@ struct Schedule {
               if (typeof popInfo.result === 'number' && popInfo.result < ScheduleManager.semesters.length) {
                 ScheduleManager.switchTempSemester(popInfo.result);
                 this.initSchedule();
+                this.refreshGrid();
               }
             }
           });
@@ -382,6 +383,7 @@ struct Schedule {
                   if (rawImportedData.semesters.length > 0) {
                     ScheduleManager.switchTempSemester(oldNum + rawImportedData.defaultSemester);
                     this.initSchedule();
+                    this.refreshGrid();
                   }
                   this.showSemesters = true;
                   this.getUIContext().getPromptAction().showToast({ message: '导入成功' });
@@ -591,6 +593,7 @@ struct Schedule {
             ScheduleManager.toppingSemester(this.displayTerm);
             this.defaultSemester = ScheduleManager.defaultSemester;
             this.initSchedule();
+            this.refreshGrid();
           }
         })
 
@@ -609,6 +612,7 @@ struct Schedule {
           ScheduleManager.newSemester('自定义名称', '手动添加', currentTime.setHours(0, 0, 0, 0) - 86400000 * currentTime.getDay(), currentTimestamp);
           ScheduleManager.switchTempSemester(ScheduleManager.semesters.length - 1);
           this.initSchedule();
+          this.refreshGrid();
         })
 
         Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
@@ -692,6 +696,7 @@ struct Schedule {
                     ScheduleManager.newSemester(this.semesters[index].name + '_副本', '从「' + this.semesters[index].name + '」复制', currentTime.setHours(0, 0, 0, 0) - 86400000 * currentTime.getDay(), currentTimestamp, undefined, ScheduleStorage.getCourses(this.semesters[index].createTime));
                   ScheduleManager.switchTempSemester(ScheduleManager.semesters.length - 1);
                   this.initSchedule();
+                  this.refreshGrid();
                 })
 
                 Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
@@ -736,8 +741,10 @@ struct Schedule {
                       selectedTextStyle: { color: presetColor[BackgroundImage.themeColor][2] },
                       onDateAccept: (value: Date) => {
                         ScheduleManager.changeSemesterStartTime(index, value.setHours(0, 0, 0, 0) - 86400000 * value.getDay());
-                        if (this.displayTerm === index)
+                        if (this.displayTerm === index) {
                           this.initSchedule();
+                          this.refreshGrid();
+                        }
                       }
                     })
                   })
@@ -769,6 +776,7 @@ struct Schedule {
             .onClick(() => {
               ScheduleManager.switchTempSemester(index);
               this.initSchedule();
+              this.refreshGrid();
             })
           }
           .width('100%')
@@ -1088,7 +1096,7 @@ struct Schedule {
     })
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
-      this.initSchedule();
+      this.initSchedule(); // 在onShown中刷新显示
     })
     .onShown(() => {
       this.refreshGrid();

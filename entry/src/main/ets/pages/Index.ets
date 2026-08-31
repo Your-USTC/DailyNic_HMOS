@@ -1,6 +1,6 @@
 
 import { common } from '@kit.AbilityKit'
-import { ComponentContent, LengthUnit } from '@kit.ArkUI'
+import { LengthUnit } from '@kit.ArkUI'
 
 import * as ScheduleSources from '../constants/ScheduleSources'
 import SettingsData from '../constants/SettingsSources'
@@ -25,7 +25,7 @@ import { currentAppVersion, initHostContext, deviceType, hostContext } from '../
 import { hdsMaterial, HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
 import accountInfoProvider from '../utils/Encryption'
 import { LinkSet, LINK, SimpleLink, MultiLink } from '../constants/Links'
-import { SplitPlaceholder } from '../view/SplitPlaceholder'
+// import { SplitPlaceholder } from '../view/SplitPlaceholder'
 
 // 滚动条参数
 enum ScrollPosition {
@@ -1015,7 +1015,7 @@ struct Index {
   /**
    * Tabs 主控程序
    */
-  defPlaceholder = new ComponentContent(this.getUIContext(), wrapBuilder(SplitPlaceholder));
+  // defPlaceholder = new ComponentContent(this.getUIContext(), wrapBuilder(SplitPlaceholder));
   pageInfo: NavPathStack = new NavPathStack();
   @StorageLink('isSplit') isSplit: NavigationMode = NavigationMode.Auto;
 
@@ -1089,7 +1089,7 @@ struct Index {
       .onNavigationModeChange((mode: NavigationMode) => {
         this.isSplit = mode;
       })
-      .splitPlaceholder(this.defPlaceholder)
+      // .splitPlaceholder(this.defPlaceholder)
 
       if (BackgroundImage.opacityLevel !== 1)
         Image(BackgroundImage.pic)
