@@ -3,6 +3,7 @@ import { Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { formBindingData, FormExtensionAbility, formInfo, formProvider } from '@kit.FormKit';
 import ScheduleManager from '../utils/Classes/ScheduleManager';
+import * as ScheduleStorage from '../utils/ScheduleStorage';
 import * as ScheduleSources from '../constants/ScheduleSources';
 import { examAttribute } from '../utils/ExamStorage';
 import examManager from '../utils/ExamManager';
@@ -64,6 +65,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
   onAddForm(want: Want) {
     // Called to return a FormBindingData object.
     UnifiedPreferences.init(this.context);
+    ScheduleStorage.init(this.context);
     ExamStorage.init(this.context);
     // console.log(JSON.stringify(want.parameters))
 
@@ -87,6 +89,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
     */
     // Called to notify the form provider to update a specified form.
     UnifiedPreferences.init(this.context);
+    ScheduleStorage.init(this.context);
     ExamStorage.init(this.context);
     const formType: number = UnifiedPreferences.getNumberSync('CardType_id' + formId, -1);
 
@@ -106,6 +109,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
     hilog.info(DOMAIN_NUMBER, TAG, `FormAbility onFormEvent, formId = ${formId}, message: ${JSON.stringify(message)}`);
 
     UnifiedPreferences.init(this.context);
+    ScheduleStorage.init(this.context);
     ExamStorage.init(this.context);
     const eventSource: string = JSON.parse(message).msgTest;
     let formData = new FormDataClass(eventSource === 'schedule' ? 0 : 1);
@@ -120,6 +124,7 @@ export default class EntryFormAbility extends FormExtensionAbility {
 
   onRemoveForm(formId: string) {
     UnifiedPreferences.init(this.context);
+    ScheduleStorage.init(this.context);
     ExamStorage.init(this.context);
     UnifiedPreferences.deleteSync('CardType_id' + formId);
     // Called to notify the form provider that a specified form has been destroyed.
