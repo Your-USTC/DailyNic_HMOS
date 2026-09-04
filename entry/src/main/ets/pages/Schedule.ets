@@ -667,6 +667,7 @@ struct Schedule {
                 .height(40)
                 .width(40)
                 .onClick(() => {
+                  this.getUIContext().getPromptAction().showToast({ message: $r('app.string.set_default_semester', ScheduleManager.semesters[index].name) });
                   ScheduleManager.setDefaultSemester(index);
                   this.defaultSemester = index;
                 })

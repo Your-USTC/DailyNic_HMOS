@@ -101,6 +101,10 @@
       "value": "能为学期「%s」重撰名字。重撰名字后，你可以再次更改。"
     },
     {
+      "name": "set_default_semester",
+      "value": "已将「%s」设为默认学期"
+    },
+    {
       "name": "delete_semester_or_not",
       "value": "你真的要删掉这个学期吗？"
     },
