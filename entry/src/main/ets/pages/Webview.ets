@@ -12,7 +12,7 @@ import { fillInformationJS, deleteAIHelper } from '../utils/tools';
 import UnifiedPreferences, { PASSWORD_KEY, REMIND_KEY, UID_KEY} from '../utils/UnifyPreference';
 import { DESKTOP_MODE, MOBILE_MODE, TABLET_MODE, DESKTOP_UA, MOBILE_UA, TABLET_UA } from '../constants/UserAgent';
 import { deviceType, hostContext } from '../constants/BasicConstants';
-import { checkPermission } from '../utils/PermissionManager';
+import { openPermissionSetting, regainPermission, PermissionRequestState } from '../utils/PermissionManager';
 import { SimpleLink } from '../constants/Links';
 import { systemShare } from '@kit.ShareKit';
 import { uniformTypeDescriptor } from '@kit.ArkData';
@@ -368,15 +368,29 @@ struct Webview {
           .onAlert((event) => {
             if (event) {
               this.getUIContext().showAlertDialog({
-                title: "来自 " + event.url + " 的警告",
+                title: $r('app.string.web_dialog_alert_from', event.url),
                 message: event.message,
-                confirm:{
-                  value: "确认",
-                  action: () => {
-                    event.result.handleConfirm();
-                  }
+                autoCancel: true,
+                alignment: DialogAlignment.Center,
+                gridCount: 4,
+                primaryButton: {
+                  value: $r('app.string.cancel'),
+                  action: () => { event.result.handleCancel(); }
                 },
-                cancel: () => { event.result.handleCancel(); }
+                secondaryButton: {
+                  enabled: true,
+                  defaultFocus: true,
+                  style: DialogButtonStyle.HIGHLIGHT,
+                  value: $r('app.string.ok'),
+                  action: () => { event.result.handleConfirm(); }
+                },
+                cancel: () => { event.result.handleCancel(); },
+                onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+                  if (dismissDialogAction.reason === DismissReason.PRESS_BACK || dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
+                    dismissDialogAction.dismiss();
+                    event.result.handleCancel();
+                  }
+                }
               });
             }
             return true;
@@ -384,17 +398,29 @@ struct Webview {
           .onConfirm((event) => {
             if (event) {
               this.getUIContext().showAlertDialog({
-                title: "来自 " + event.url + " 的消息",
+                title: $r('app.string.web_dialog_message_from', event.url),
                 message: event.message,
+                autoCancel: true,
+                alignment: DialogAlignment.Center,
+                gridCount: 4,
                 primaryButton: {
-                  value: 'cancel',
+                  value: $r('app.string.cancel'),
                   action: () => { event.result.handleCancel(); }
                 },
                 secondaryButton: {
-                  value: 'ok',
+                  enabled: true,
+                  defaultFocus: true,
+                  style: DialogButtonStyle.HIGHLIGHT,
+                  value: $r('app.string.ok'),
                   action: () => { event.result.handleConfirm(); }
                 },
-                cancel: () => { event.result.handleCancel(); }
+                cancel: () => { event.result.handleCancel(); },
+                onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+                  if (dismissDialogAction.reason === DismissReason.PRESS_BACK || dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
+                    dismissDialogAction.dismiss();
+                    event.result.handleCancel();
+                  }
+                }
               })
             }
             return true;
@@ -402,26 +428,43 @@ struct Webview {
           .onPrompt((event) => {
             if (event) {
               this.getUIContext().showAlertDialog({
-                title: "来自 " + event.url + " 的消息",
+                title: $r('app.string.web_dialog_message_from', event.url),
                 message: event.message + "\n󰊗此处应有输入框，但是我们没有在学校网站碰到过需要输入框的消息，因此没做（滑稽）。如果你不幸遇到了，在󰁡菜单中选择「在系统浏览器中打开」，并稍后通过「关于」页面的联系方式向我们反馈。",
-                confirm:{
-                  value: "好吧",
+                autoCancel: true,
+                alignment: DialogAlignment.Center,
+                gridCount: 4,
+                primaryButton: {
+                  value: $r('app.string.cancel'),
                   action: () => { event.result.handleCancel(); }
                 },
-                cancel: () => { event.result.handleCancel(); }
+                secondaryButton: {
+                  enabled: true,
+                  defaultFocus: true,
+                  style: DialogButtonStyle.HIGHLIGHT,
+                  value: $r('app.string.ok'),
+                  action: () => { event.result.handleCancel(); }
+                },
+                cancel: () => { event.result.handleCancel(); },
+                onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+                  if (dismissDialogAction.reason === DismissReason.PRESS_BACK || dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
+                    dismissDialogAction.dismiss();
+                    event.result.handleCancel();
+                  }
+                }
               })
             }
             return true;
           })
           .onGeolocationShow(async (event) => {
             if (event) {
-              console.error('requestPermissionsFromUser');
-              console.error('requestPermissionsFromUser');
-              const flag = await checkPermission(["ohos.permission.APPROXIMATELY_LOCATION"]);
-              if (flag) {
-                console.error('requestPermissionsFromUser');
-              } else {
+              // 应用级定位权限是Web定位的前提：未授权先拉起系统授权弹窗，被"禁止后不再询问"时提示用户前往设置
+              const state = await regainPermission(hostContext(), ["ohos.permission.APPROXIMATELY_LOCATION"]);
+              if (state === PermissionRequestState.GRANTED) {
                 this.askLocation(event);
+              } else if (state === PermissionRequestState.BLOCKED) {
+                this.locationPermissionBlocked(event);
+              } else {
+                event.geolocation.invoke(event.origin, false, false);
               }
             }
           })
@@ -611,21 +654,78 @@ struct Webview {
   }
 
   askLocation(event: OnGeolocationShowEvent) {
+    let answered = false;
+    const answer = (allow: boolean) => {
+      if (answered)
+        return;
+      answered = true;
+      // invoke的第三个参数表示是否记住当前弹窗的选择状态，如果传入true，则下次不再弹出对话框
+      event.geolocation.invoke(event.origin, allow, false);
+    };
     this.getUIContext().showAlertDialog({
-      title: '定位权限',
-      message: `是否允许${this.webviewController.getOriginalUrl()}获取你的位置？`,
-      autoCancel: false,
+      title: $r('app.string.location_permission_title'),
+      message: $r('app.string.ask_location_permission', event.origin),
+      autoCancel: true,
+      alignment: DialogAlignment.Center,
+      gridCount: 4,
       primaryButton: {
         value: $r('app.string.no'),
-        action: () => {
-          event.geolocation.invoke(event.origin, false, false);
-        }
+        action: () => answer(false)
       },
       secondaryButton: {
+        enabled: true,
+        defaultFocus: true,
+        style: DialogButtonStyle.HIGHLIGHT,
         value: $r('app.string.yes'),
+        action: () => answer(true)
+      },
+      cancel: () => answer(false),
+      onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+        if (dismissDialogAction.reason === DismissReason.PRESS_BACK || dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
+          dismissDialogAction.dismiss();
+          answer(false);
+        }
+      }
+    });
+  }
+
+  locationPermissionBlocked(event: OnGeolocationShowEvent) {
+    let denied = false;
+    const deny = () => {
+      if (denied)
+        return;
+      denied = true;
+      event.geolocation.invoke(event.origin, false, false);
+    };
+    this.getUIContext().showAlertDialog({
+      title: $r('app.string.location_permission_title'),
+      message: $r('app.string.need_location_permission'),
+      autoCancel: true,
+      alignment: DialogAlignment.Center,
+      gridCount: 4,
+      primaryButton: {
+        value: $r('app.string.cancel'),
+        action: () => deny()
+      },
+      secondaryButton: {
+        enabled: true,
+        defaultFocus: true,
+        style: DialogButtonStyle.HIGHLIGHT,
+        value: $r('app.string.goto_system_settings'),
         action: () => {
-          // invoke的第三个参数表示是否记住当前弹窗的选择状态，如果传入true，则下次不再弹出对话框
-          event.geolocation.invoke(event.origin, true, false);
+          openPermissionSetting(hostContext(), ["ohos.permission.APPROXIMATELY_LOCATION"]).then((granted: boolean) => {
+            if (granted)
+              this.askLocation(event);
+            else
+              deny();
+          });
+        }
+      },
+      cancel: () => deny(),
+      onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+        if (dismissDialogAction.reason === DismissReason.PRESS_BACK || dismissDialogAction.reason === DismissReason.TOUCH_OUTSIDE) {
+          dismissDialogAction.dismiss();
+          deny();
         }
       }
     });

@@ -785,6 +785,26 @@
       "value": "用于内置网页获取当前位置信息"
     },
     {
+      "name": "location_permission_title",
+      "value": "定位权限"
+    },
+    {
+      "name": "need_location_permission",
+      "value": "你需要同意「妮可之记」的定位权限，网页才能获取你的位置。"
+    },
+    {
+      "name": "ask_location_permission",
+      "value": "是否允许 %s 获取你的位置？"
+    },
+    {
+      "name": "web_dialog_message_from",
+      "value": "来自 %s 的消息"
+    },
+    {
+      "name": "web_dialog_alert_from",
+      "value": "来自 %s 的警告"
+    },
+    {
       "name": "write_calendar_permission_reason",
       "value": "用于写入上课和考试提醒"
     },
