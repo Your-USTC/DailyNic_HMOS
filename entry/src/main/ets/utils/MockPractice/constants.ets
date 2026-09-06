@@ -3,6 +3,31 @@ export const TestAttributeFileName = 'Attributes.json';
 export const QuestionFileName = 'QuestionList.json';
 export const AnswerFileName = 'AnswerRounds.json';
 
+/** 表示 CSV 导入时某一列不参与映射 */
+export const CSV_UNUSED_COLUMN: number = -1;
+
+/**
+ * CSV 各列的语义映射，取值为从 1 开始的列号，CSV_UNUSED_COLUMN 表示不使用。
+ * optionStart 为第一道选项（如"选项A"）所在列，选项按其后的连续列依次读取。
+ */
+export interface csvColumnMapping {
+  section: number,
+  type: number,
+  context: number,
+  answer: number,
+  analysis: number,
+  difficulty: number,
+  knowledgePoint: number,
+  optionCount: number,
+  optionStart: number
+}
+
+export interface csvImportConfig {
+  /** 第一条数据所在行（从 1 开始计数） */
+  startRow: number,
+  columns: csvColumnMapping
+}
+
 /**
  * 目录结构：
  * - MockPractice
