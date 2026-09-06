@@ -277,7 +277,7 @@ struct ThemeSetting {
             .padding({ left: 16, right: 16 });
 
             Row() {
-              Text($r('app.string.image_brightness'));
+              Text($r('app.string.basic_brightness'));
 
               Slider({
                 value: this.imgBrightness,
