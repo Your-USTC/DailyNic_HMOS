@@ -536,7 +536,7 @@ struct Webview {
             .width('100%')
             .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
             .autoResize(true)
-            .opacity((1 - BackgroundImage.opacityLevel) * BackgroundImage.brightness)
+            .opacity((1 - BackgroundImage.opacityLevel) * BackgroundImage.effectiveBrightness)
             .hitTestBehavior(HitTestMode.None)
       }
       .layoutWeight(1)

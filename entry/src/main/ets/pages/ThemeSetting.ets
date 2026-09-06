@@ -1,5 +1,5 @@
 
-import { common, ConfigurationConstant, Want } from '@kit.AbilityKit';
+import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { fileIo, fileUri } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
@@ -84,11 +84,13 @@ struct ThemeSetting {
   private oriImgPath: string = ''; // 原始图片路径
   private imageSize: number = 0; // 图片文件大小
   @State showBlurSlider: boolean = BackgroundImage.backgroundBlur;
+  @State autoDecBright: boolean = BackgroundImage.autoDecBright;
+  @State pickedAvgBrightness: number = -1; // 新选图片的平均亮度，未测量时为-1
   windowWidth: number = 1840;
   windowHeight: number = 2800;
   @State showWarning: boolean = false;
 
-  @State colorMode: number = UnifiedPreferences.getNumberSync('ColorMode', ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+  @State colorMode: number = BackgroundImage.colorMode;
   @State adaptSplit: number = UnifiedPreferences.getNumberSync('AdaptSplit', NavigationMode.Auto);
 
   @State selectedColor: number = BackgroundImage.themeColor;
@@ -108,6 +110,8 @@ struct ThemeSetting {
           fileIo.copyFile(this.oriImgPath, newImgPath)
             .catch((error: BusinessError) => console.error('Copy image failed:', JSON.stringify(error)));
           UnifiedPreferences.putSync('ImagePath', newImgPath, false);
+          if (this.pickedAvgBrightness >= 0)
+            UnifiedPreferences.putSync('ImageAvgBrightness', this.pickedAvgBrightness, false);
         }
         if (this.isShown !== BackgroundImage.showImage)
           UnifiedPreferences.putSync('ShowImage', this.isShown, false);
@@ -121,6 +125,10 @@ struct ThemeSetting {
           UnifiedPreferences.putSync('ThemeColor', this.selectedColor, false);
         if (this.imgBrightness !== BackgroundImage.brightness)
           UnifiedPreferences.putSync('BackgroundBrightness', this.imgBrightness, false);
+        if (this.autoDecBright !== BackgroundImage.autoDecBright)
+          UnifiedPreferences.putSync('AutoDecBright', this.autoDecBright, false);
+        if (this.colorMode !== BackgroundImage.colorMode)
+          UnifiedPreferences.putSync('ColorMode', this.colorMode);
         UnifiedPreferences.putSync('AdaptSplit', this.adaptSplit, false);
         UnifiedPreferences.putSync('FaultOccurred', false, false);
         UnifiedPreferences.flush();
@@ -163,7 +171,7 @@ struct ThemeSetting {
                 .constraintSize({ minHeight: 80, maxHeight: 360 })
                 .borderRadius(16)
                 .objectFit(ImageFit.Contain)
-                .opacity(this.isShown ? this.imgBrightness / 100 : 1)
+                .opacity(this.isShown ? this.imgBrightness / 100 * this.previewBrightnessFactor() : 1)
                 .autoResize(true)
                 .interpolation(ImageInterpolation.Medium)
                 .animation({
@@ -288,6 +296,16 @@ struct ThemeSetting {
             }
             .padding({ left: 16, right: 16 })
 
+            Row() {
+              Text($r('app.string.auto_decrease_background_brightness'))
+                .layoutWeight(1)
+
+              Toggle({ isOn: $$this.autoDecBright, type: ToggleType.Checkbox })
+                .selectedColor(presetColor[BackgroundImage.themeColor][2])
+                .padding({ right: 16 })
+            }
+            .padding({ left: 16, right: 16 });
+
             Text($r('app.string.too_large_bg_image'))
               .fontColor($r('app.color.red'))
               .fontSize(15)
@@ -384,10 +402,6 @@ struct ThemeSetting {
               Text($r('app.string.change_dark_light_mode'))
                 .fontSize(20)
                 .fontWeight(FontWeight.Bold);
-              Divider()
-                .layoutWeight(1);
-              Text($r('app.string.apply_immediately'))
-                .margin({ right: 7 });
             }
             .width('100%')
             .padding(8)
@@ -410,8 +424,8 @@ struct ThemeSetting {
               .onClick(() => {
                 if (this.colorMode !== ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT) {
                   this.colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
-                  this.getUIContext().getHostContext()?.getApplicationContext().setColorMode(this.colorMode);
-                  UnifiedPreferences.putSync('ColorMode', this.colorMode);
+                  // this.getUIContext().getHostContext()?.getApplicationContext().setColorMode(this.colorMode);
+                  // UnifiedPreferences.putSync('ColorMode', this.colorMode);
                 }
               })
 
@@ -434,8 +448,8 @@ struct ThemeSetting {
               .onClick(() => {
                 if (this.colorMode !== ConfigurationConstant.ColorMode.COLOR_MODE_DARK) {
                   this.colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_DARK;
-                  this.getUIContext().getHostContext()?.getApplicationContext().setColorMode(this.colorMode);
-                  UnifiedPreferences.putSync('ColorMode', this.colorMode);
+                  // this.getUIContext().getHostContext()?.getApplicationContext().setColorMode(this.colorMode);
+                  // UnifiedPreferences.putSync('ColorMode', this.colorMode);
                 }
               })
 
@@ -458,8 +472,8 @@ struct ThemeSetting {
               .onClick(() => {
                 if (this.colorMode !== ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET) {
                   this.colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
-                  this.getUIContext().getHostContext()?.getApplicationContext().setColorMode(this.colorMode);
-                  UnifiedPreferences.putSync('ColorMode', this.colorMode);
+                  // this.getUIContext().getHostContext()?.getApplicationContext().setColorMode(this.colorMode);
+                  // UnifiedPreferences.putSync('ColorMode', this.colorMode);
                 }
               })
             }
@@ -548,6 +562,15 @@ struct ThemeSetting {
     })
   }
 
+  /**
+   * 预览图应乘的自动亮度系数：深色模式且开启自动降低时按图片平均亮度调节
+   * @returns 亮度系数，1表示不调节
+   */
+  previewBrightnessFactor(): number {
+    const avgBrightness = this.selectResult !== undefined ? this.pickedAvgBrightness : BackgroundImage.avgBrightness;
+    return BackgroundImage.autoBrightFactor(avgBrightness, this.autoDecBright);
+  }
+
   SelectImage() {
     try {
       const photoSelectOptions = new photoAccessHelper.PhotoSelectOptions();
@@ -561,6 +584,14 @@ struct ThemeSetting {
           this.imageSize = fileIo.statSync(this.oriImgPath).size;
           this.imgPreview = photoSelectResult.photoUris[0];
           this.isShown = true;
+          this.pickedAvgBrightness = -1;
+          // 提前测量新图片的平均亮度，确认时随图片路径一起持久化
+          BackgroundImage.calculateBrightnessByDownSample(this.oriImgPath).then((avg: number) => {
+            if (this.selectResult === photoSelectResult.photoUris[0])
+              this.pickedAvgBrightness = avg;
+          }).catch((err: BusinessError) => {
+            console.error(`Calculate image brightness failed: ${JSON.stringify(err)}`);
+          });
         }
       }).catch((err: BusinessError) => {
         console.error(`PhotoViewPicker failed: ${JSON.stringify(err)}`)

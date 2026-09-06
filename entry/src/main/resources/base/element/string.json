@@ -293,6 +293,10 @@
       "value": "组件模糊"
     },
     {
+      "name": "auto_decrease_background_brightness",
+      "value": "深色模式自动降低图片亮度"
+    },
+    {
       "name": "image_brightness",
       "value": "图片亮度"
     },
@@ -315,10 +319,6 @@
     {
       "name": "change_dark_light_mode",
       "value": "更改深浅色模式"
-    },
-    {
-      "name": "apply_immediately",
-      "value": "立即生效"
     },
     {
       "name": "dark",

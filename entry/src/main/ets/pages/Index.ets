@@ -1027,7 +1027,7 @@ struct Index {
         .width('100%')
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
         .autoResize(true)
-        .opacity(BackgroundImage.brightness)
+        .opacity(BackgroundImage.effectiveBrightness)
 
       Navigation(this.pageInfo) {
         HdsTabs({ controller: this.tabsController }) {
@@ -1098,7 +1098,7 @@ struct Index {
           .width('100%')
           .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
           .autoResize(true)
-          .opacity((1 - BackgroundImage.opacityLevel) * BackgroundImage.brightness)
+          .opacity((1 - BackgroundImage.opacityLevel) * BackgroundImage.effectiveBrightness)
           .hitTestBehavior(HitTestMode.None)
     }
     .height('100%')
