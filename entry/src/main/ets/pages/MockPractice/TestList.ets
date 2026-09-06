@@ -1,9 +1,9 @@
 import BackgroundImage from '../../utils/BgImageManager';
-import { answerStore } from '../../utils/MockPractice/AnswerSessionManager';
-import { fullID, testAttribute, csvImportConfig } from '../../utils/MockPractice/constants';
-import { importTestFromCsv } from '../../utils/MockPractice/QuestionsManager';
+import { bankAttribute, bankNavParam, csvImportConfig } from '../../utils/MockPractice/constants';
+import { bankStore } from '../../utils/MockPractice/QuestionBankManager';
+import { importBankFromCsv } from '../../utils/MockPractice/QuestionsManager';
 import { readDataFromCsv } from '../../utils/MockPractice/DataTransformer';
-import { getAllTest, removeTest } from '../../utils/MockPractice/TestManager';
+import { answerStore } from '../../utils/MockPractice/AnswerSessionManager';
 import { hostContext } from '../../constants/BasicConstants';
 import { CsvImportPanel } from './ImportPanel';
 
@@ -16,21 +16,21 @@ export function MPLBuilder(name: string, param?: Object) {
 @Entry
 @Component
 struct MockPracticeList {
-  @State practiceList: testAttribute[] = getAllTest();
+  /** 题库列表（题库模块） */
+  @State bankList: bankAttribute[] = [];
   @State showImportSheet: boolean = false;
   @State csvLines: string[] = [];
   @State csvFileName: string = 'test';
+  @State showRenameSheet: boolean = false;
+  @State renameTargetId: string = '';
+  @State renameInput: string = '';
+  pathStack: NavPathStack = new NavPathStack();
+
+  aboutToAppear(): void {
+    this.bankList = bankStore.listBanks();
+  }
 
   menuItems: Array<NavigationMenuItem> = [
-    {
-      value: 'delete',
-      icon: $r('app.media.trash_red'),
-      action: () => {
-        const testList = getAllTest();
-        if (testList.length > 0)
-          removeTest(testList[0].uuid);
-      }
-    },
     {
       value: 'import',
       icon: $r('app.media.import'),
@@ -39,7 +39,14 @@ struct MockPracticeList {
       }
     }
   ];
-  pathStack: NavPathStack = new NavPathStack();
+
+  formatDate(ts: number): string {
+    return new Date(ts).toLocaleString('zh-cn', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+
+  lastPracticeLabel(ts: number): string {
+    return ts <= 0 ? '尚未练习' : `最近练习 ${this.formatDate(ts)}`;
+  }
 
   startImport(): void {
     readDataFromCsv(hostContext()).then((file) => {
@@ -54,14 +61,71 @@ struct MockPracticeList {
   }
 
   confirmImport(name: string, config: csvImportConfig): void {
-    const uuid = importTestFromCsv(name, this.csvLines, config);
+    const uuid = importBankFromCsv(name, this.csvLines, config);
     if (uuid === '') {
       this.getUIContext().getPromptAction().showToast({ message: '未能解析出题目，请检查起始行与列设置', duration: 2500 });
       return;
     }
     this.showImportSheet = false;
-    this.practiceList = getAllTest();
+    this.bankList = bankStore.listBanks();
     this.getUIContext().getPromptAction().showToast({ message: '导入成功', duration: 1500 });
+  }
+
+  openRenameSheet(bank: bankAttribute): void {
+    this.renameTargetId = bank.uuid;
+    this.renameInput = bank.name;
+    this.showRenameSheet = true;
+  }
+
+  confirmRename(): void {
+    const name = this.renameInput.trim();
+    if (name === '' || this.renameTargetId === '') {
+      this.getUIContext().getPromptAction().showToast({ message: '名称不能为空', duration: 1500 });
+      return;
+    }
+    bankStore.updateBankAttribute(this.renameTargetId, { name: name });
+    this.showRenameSheet = false;
+    this.bankList = bankStore.listBanks();
+  }
+
+  confirmRemoveBank(bank: bankAttribute): void {
+    this.getUIContext().showAlertDialog({
+      title: '删除题库',
+      message: `将删除「${bank.name}」及其全部做题记录，且无法恢复。确定删除？`,
+      autoCancel: true,
+      alignment: DialogAlignment.Center,
+      primaryButton: {
+        value: '取消',
+        action: () => {}
+      },
+      secondaryButton: {
+        value: '删除',
+        style: DialogButtonStyle.HIGHLIGHT,
+        fontColor: $r('app.color.red'),
+        action: () => {
+          // 做题记录存放在题库目录内：先丢弃 session 缓存，再删除整个题库目录
+          answerStore.forget(bank.uuid);
+          bankStore.removeBank(bank.uuid);
+          this.bankList = bankStore.listBanks();
+          this.getUIContext().getPromptAction().showToast({ message: '题库已删除', duration: 1500 });
+        }
+      },
+      cancel: () => {}
+    });
+  }
+
+  @Builder
+  bankMenu(bank: bankAttribute) {
+    Menu() {
+      MenuItem({ content: '重命名' })
+        .onClick(() => {
+          this.openRenameSheet(bank);
+        })
+      MenuItem({ content: '删除题库' })
+        .onClick(() => {
+          this.confirmRemoveBank(bank);
+        })
+    }
   }
 
   @Builder
@@ -78,10 +142,39 @@ struct MockPracticeList {
     })
   }
 
+  @Builder
+  renameSheet() {
+    Column() {
+      TextInput({ text: this.renameInput })
+        .height(40)
+        .onChange((value: string) => {
+          this.renameInput = value;
+        })
+      Row() {
+        Button('取消')
+          .buttonStyle(ButtonStyleMode.TEXTUAL)
+          .width('50%')
+          .onClick(() => {
+            this.showRenameSheet = false;
+          })
+        Button('确定')
+          .buttonStyle(ButtonStyleMode.EMPHASIZED)
+          .width('50%')
+          .onClick(() => {
+            this.confirmRename();
+          })
+      }
+      .margin({ top: 12 })
+      .width('100%')
+    }
+    .padding({ top: 4, left: 16, right: 16, bottom: 8 })
+    .width('100%')
+  }
+
   build() {
     NavDestination() {
       Column() {
-        if (this.practiceList.length === 0) {
+        if (this.bankList.length === 0) {
           Column() {
             Column() {
               Stack() {
@@ -93,7 +186,7 @@ struct MockPracticeList {
                   .fontColor('#fff')
                   .offset({ x: -5, y: 26 })
               }
-              Text('从右上角导入教师提供的 CSV\n文件以开始').fontSize(18).textAlign(TextAlign.Center);
+              Text('从右上角导入教师提供的 CSV\n文件以创建题库').fontSize(18).textAlign(TextAlign.Center);
             }
             .backgroundBlurStyle(BackgroundImage.blurLevel)
             .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.normal_background') : undefined)
@@ -109,21 +202,28 @@ struct MockPracticeList {
           .justifyContent(FlexAlign.Center);
         } else {
           List() {
-            ForEach(this.practiceList, (singlePractice: testAttribute, index: number) => {
+            ForEach(this.bankList, (singleBank: bankAttribute) => {
               ListItem() {
                 Column() {
-                  Text(singlePractice.name)
-                  Text(new Date(singlePractice.createTime).toLocaleString('zh-cn', { year: 'numeric', month: '2-digit', day: '2-digit' }))
-                  Text(new Date(singlePractice.lastOpenTime).toLocaleString('zh-cn', { year: 'numeric', month: '2-digit', day: '2-digit' }))
-                  Text("ID: " + singlePractice.uuid)
-                    .fontSize(12)
-                    .fontColor($r('app.color.transparent_text'))
+                  Text(singleBank.name)
+                    .fontSize(18)
+                    .fontWeight(FontWeight.Medium)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  Row() {
+                    Text(`共 ${bankStore.getQuestionCount(singleBank.uuid)} 题`)
+                    Text(`创建 ${this.formatDate(singleBank.createTime)}`)
+                    Text(this.lastPracticeLabel(singleBank.lastOpenTime))
+                  }
+                  .margin({ top: 6 })
+                  .width('100%')
+                  .justifyContent(FlexAlign.SpaceBetween)
                 }
+                .width('100%')
                 .onClick(() => {
-                  const sessionId = answerStore.create(singlePractice.uuid, 'ordered', false);
                   this.pathStack.pushPath({
-                    name: "MockPracticeMain",
-                    param: { name: singlePractice.name, test: singlePractice.uuid, answer: sessionId } as fullID
+                    name: 'MockPracticeDetail',
+                    param: { bankId: singleBank.uuid, bankName: singleBank.name } as bankNavParam
                   });
                 })
               }
@@ -133,7 +233,8 @@ struct MockPracticeList {
               .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : undefined)
               .backgroundBlurStyle(BackgroundImage.blurLevel)
               .borderRadius(20)
-            })
+              .bindContextMenu(this.bankMenu(singleBank), ResponseType.LongPress)
+            }, (singleBank: bankAttribute) => singleBank.uuid + singleBank.name)
           }
           .width('100%')
           .height('100%')
@@ -144,6 +245,15 @@ struct MockPracticeList {
           .padding({ left: 12, right: 12 })
           .contentStartOffset(4)
           .contentEndOffset(12)
+          // 重命名 sheet 绑定在 List 节点上：同一节点重复 bindSheet 会相互覆盖
+          .bindSheet($$this.showRenameSheet, this.renameSheet(), {
+            detents: [SheetSize.FIT_CONTENT],
+            preferType: SheetType.CENTER,
+            showClose: false,
+            backgroundColor: '#00d00721',
+            blurStyle: BlurStyle.Regular,
+            title: { title: '重命名题库' }
+          })
         }
       }
       .width('100%')
@@ -168,6 +278,10 @@ struct MockPracticeList {
     .backgroundColor(BackgroundImage.showImage ? '#00d00721' : $r('app.color.normal_background'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
+    })
+    .onShown(() => {
+      // 从题库详情返回时刷新（题数、最近练习时间可能已变化）
+      this.bankList = bankStore.listBanks();
     })
   }
 }

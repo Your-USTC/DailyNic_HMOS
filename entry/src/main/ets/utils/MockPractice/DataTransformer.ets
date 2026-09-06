@@ -236,9 +236,7 @@ export function getObjectFromCsv(data: string[], config: csvImportConfig): singl
       difficulty: columnValue(fields, cols.difficulty) || undefined,
       knowledgePoint: columnValue(fields, cols.knowledgePoint) || undefined,
       optionCount: options.length,
-      options: options,
-      starred: false,
-      ignore: false
+      options: options
     });
   }
   return result;

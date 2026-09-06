@@ -56,9 +56,19 @@
       "buildFunction": "MPLBuilder"
     },
     {
+      "name": "MockPracticeDetail",
+      "pageSourceFile": "src/main/ets/pages/MockPractice/BankDetail.ets",
+      "buildFunction": "MBDBuilder"
+    },
+    {
       "name": "MockPracticeMain",
       "pageSourceFile": "src/main/ets/pages/MockPractice/OnAnswering.ets",
       "buildFunction": "MPMBuilder"
+    },
+    {
+      "name": "MockPracticeRecord",
+      "pageSourceFile": "src/main/ets/pages/MockPractice/SessionRecord.ets",
+      "buildFunction": "MPRBuilder"
     },
     {
       "name": "CleanStorage",

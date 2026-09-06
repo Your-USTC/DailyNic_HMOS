@@ -1,43 +1,66 @@
+/**
+ * 做题记录（session）模块：依托题库产生和管理练习记录。
+ * 一个 session 通过 questionNO 持有选题出的题库题号子集（可以是全部或部分题号），
+ * 作答与进度即时写盘（写穿），因此无需手动保存；session 数据存放在所属题库的目录内，
+ * 题库被删除时记录一并丢失（见 QuestionBankManager.removeBank）。
+ * 题目内容一律通过 QuestionBankManager 读取，本模块不持久化题目。
+ */
 import {
   BasicDir,
-  AnswerFileName,
+  SessionFileName,
   singleQuestion,
   answerMark,
   answerRecord,
   answerSession,
-  answerSessionAttribute,
   sessionSummary,
   questionStatus,
   AnswerStatus,
-  PracticeMode
+  PracticeMode,
+  SessionOrigin
 } from './constants';
+import { bankStore } from './QuestionBankManager';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { getQuestions } from './TestManager';
 
-function ensureDir(uuid: string): void {
-  const dirPath = BasicDir + uuid + '/';
+function ensureDir(bankId: string): void {
+  const dirPath = BasicDir + bankId + '/';
   if (!fileIo.accessSync(dirPath)) {
     fileIo.mkdirSync(dirPath, true);
   }
 }
 
-function readSessionsFromDisk(uuid: string): answerSession[] {
-  const filePath = BasicDir + uuid + '/' + AnswerFileName;
+/**
+ * 兼容旧版本落盘数据：补齐新增的 bankId/origin/createdAt 等字段，
+ * 旧记录按"全部题号"的练习对待；下次写盘时自动转为新格式。
+ */
+function normalizeSession(raw: answerSession, bankId: string): answerSession {
+  return {
+    sessionId: raw.sessionId,
+    bankId: raw.bankId !== undefined ? raw.bankId : bankId,
+    origin: raw.origin !== undefined ? raw.origin : 'full',
+    mode: raw.mode !== undefined ? raw.mode : 'ordered',
+    createdAt: raw.createdAt !== undefined ? raw.createdAt : (raw.lastAnswerTime || 0),
+    lastAnswerTime: raw.lastAnswerTime !== undefined ? raw.lastAnswerTime : 0,
+    questionNO: raw.questionNO !== undefined ? raw.questionNO : [],
+    answers: raw.answers !== undefined ? raw.answers : [],
+    currentIndex: raw.currentIndex !== undefined ? raw.currentIndex : 0,
+    marks: raw.marks !== undefined ? raw.marks : []
+  };
+}
+
+function readSessionsFromDisk(bankId: string): answerSession[] {
+  const filePath = BasicDir + bankId + '/' + SessionFileName;
   try {
     const text = fileIo.readTextSync(filePath);
-    return JSON.parse(text) as answerSession[];
+    const rawList = JSON.parse(text) as answerSession[];
+    const result: answerSession[] = [];
+    for (let i = 0; i < rawList.length; i++) {
+      result.push(normalizeSession(rawList[i], bankId));
+    }
+    return result;
   } catch (e) {
     return [];
   }
-}
-
-function writeSessionsToDisk(uuid: string, sessions: answerSession[]): void {
-  ensureDir(uuid);
-  const filePath = BasicDir + uuid + '/' + AnswerFileName;
-  const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC);
-  fileIo.writeSync(file.fd, JSON.stringify(sessions));
-  fileIo.closeSync(file);
 }
 
 function buildShuffledOrder(count: number): number[] {
@@ -54,23 +77,129 @@ function buildShuffledOrder(count: number): number[] {
   return order;
 }
 
-export class AnswerSessionStore {
-  private sessions: Map<string, answerSession[]> = new Map();
-  private dirty: Set<string> = new Set();
-
-  private isLoaded(uuid: string): boolean {
-    return this.sessions.has(uuid);
+/** 校验题号子集：去重并过滤掉越界的题号，得到合法题号列表 */
+function normalizeQuestionNO(questionNO: number[], bankCount: number): number[] {
+  const seen: Set<number> = new Set();
+  const result: number[] = [];
+  for (let i = 0; i < questionNO.length; i++) {
+    const no = questionNO[i];
+    if (no >= 0 && no < bankCount && !seen.has(no)) {
+      seen.add(no);
+      result.push(no);
+    }
   }
+  return result;
+}
 
-  private ensureLoaded(uuid: string): void {
-    if (!this.isLoaded(uuid)) {
-      this.load(uuid);
+class AnswerSessionStore {
+  private sessions: Map<string, answerSession[]> = new Map();
+
+  private ensureLoaded(bankId: string): void {
+    if (!this.sessions.has(bankId)) {
+      this.sessions.set(bankId, readSessionsFromDisk(bankId));
     }
   }
 
-  get(uuid: string, sessionId: string): answerSession | null {
-    this.ensureLoaded(uuid);
-    const list = this.sessions.get(uuid)!;
+  /** 每次变更后立即落盘，保证中途退出不丢数据 */
+  private persist(bankId: string): void {
+    const list = this.sessions.get(bankId);
+    if (list === undefined) {
+      return;
+    }
+    ensureDir(bankId);
+    const filePath = BasicDir + bankId + '/' + SessionFileName;
+    const file = fileIo.openSync(filePath,
+      fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE | fileIo.OpenMode.TRUNC);
+    fileIo.writeSync(file.fd, JSON.stringify(list));
+    fileIo.closeSync(file);
+  }
+
+  private newSession(bankId: string, origin: SessionOrigin, mode: PracticeMode,
+    questionNO: number[]): answerSession {
+    const marks: answerMark[] = [];
+    const bankCount = bankStore.getQuestionCount(bankId);
+    for (let i = 0; i < bankCount; i++) {
+      marks.push({ starred: false, ignore: false });
+    }
+    return {
+      sessionId: util.generateRandomUUID(),
+      bankId: bankId,
+      origin: origin,
+      mode: mode,
+      createdAt: Date.now(),
+      lastAnswerTime: 0,
+      questionNO: questionNO,
+      answers: [],
+      currentIndex: 0,
+      marks: marks
+    };
+  }
+
+  /** 核心：以给定的题号子集创建一次练习，返回 sessionId；题号为空时返回 '' */
+  createSession(bankId: string, mode: PracticeMode, origin: SessionOrigin,
+    questionNO: number[]): string {
+    const bankCount = bankStore.getQuestionCount(bankId);
+    if (bankCount === 0) {
+      return '';
+    }
+    const nos = normalizeQuestionNO(questionNO, bankCount);
+    if (nos.length === 0) {
+      return '';
+    }
+
+    this.ensureLoaded(bankId);
+    const list = this.sessions.get(bankId)!;
+    const session = this.newSession(bankId, origin, mode, nos);
+    if (mode === 'random') {
+      session.questionNO = buildShuffledOrder(nos.length).map((i: number): number => nos[i]);
+    }
+    list.push(session);
+    this.persist(bankId);
+    return session.sessionId;
+  }
+
+  /** 全部题号练习 */
+  createFullSession(bankId: string, mode: PracticeMode): string {
+    const bankCount = bankStore.getQuestionCount(bankId);
+    const all: number[] = [];
+    for (let i = 0; i < bankCount; i++) {
+      all.push(i);
+    }
+    return this.createSession(bankId, mode, 'full', all);
+  }
+
+  /**
+   * 错题重做（为后续错题本功能预留 starred 维度）：从某次记录中收集做错的题
+   * （同一题多次作答以最后一次为准），可选附加收藏题，生成一次部分题号的新练习。
+   */
+  createRetrySession(bankId: string, sourceSessionId: string,
+    includeStarred: boolean): string {
+    const source = this.getSession(bankId, sourceSessionId);
+    if (source === null) {
+      return '';
+    }
+    const lastResult: Map<number, boolean> = new Map();
+    for (let i = 0; i < source.answers.length; i++) {
+      lastResult.set(source.answers[i].questionIndex, source.answers[i].isCorrect);
+    }
+    const targets: number[] = [];
+    for (let i = 0; i < source.questionNO.length; i++) {
+      const no = source.questionNO[i];
+      const wrong = lastResult.get(no);
+      const starred = source.marks[no] !== undefined && source.marks[no].starred;
+      if ((wrong === false) || (includeStarred && starred)) {
+        targets.push(no);
+      }
+    }
+    if (targets.length === 0) {
+      return '';
+    }
+    return this.createSession(bankId, 'ordered', 'retry', targets);
+  }
+
+  getSession(bankId: string, sessionId: string): answerSession | null {
+    this.ensureLoaded(bankId);
+    const list = this.sessions.get(bankId)!;
     for (let i = 0; i < list.length; i++) {
       if (list[i].sessionId === sessionId) {
         return list[i];
@@ -79,52 +208,18 @@ export class AnswerSessionStore {
     return null;
   }
 
-  list(uuid: string): answerSession[] {
-    this.ensureLoaded(uuid);
-    return this.sessions.get(uuid)!;
+  listSessions(bankId: string): answerSession[] {
+    this.ensureLoaded(bankId);
+    return this.sessions.get(bankId)!;
   }
 
-  create(uuid: string, mode: PracticeMode, starredOnly: boolean): string {
-    const questions = getQuestions(uuid);
-    if (questions.length === 0) {
-      return '';
-    }
-
-    this.ensureLoaded(uuid);
-    const list = this.sessions.get(uuid)!;
-
-    const marks: answerMark[] = questions.map((q: singleQuestion): answerMark => ({
-      starred: false,
-      ignore: false
-    }));
-
-    const questionNO: number[] = mode === 'ordered'
-      ? Array.from<number, number>({ length: questions.length }, (_, i) => i)
-      : buildShuffledOrder(questions.length);
-
-    const sessionId = util.generateRandomUUID();
-    list.push({
-      sessionId: sessionId,
-      lastAnswerTime: 0,
-      mode: mode,
-      starred: starredOnly,
-      marks: marks,
-      questionNO: questionNO,
-      answers: [],
-      currentIndex: 0
-    });
-
-    this.dirty.add(uuid);
-    return sessionId;
-  }
-
-  submitAnswer(uuid: string, sessionId: string, userAnswer: string): boolean {
-    const session = this.get(uuid, sessionId);
-    if (!session || !session.questionNO || session.currentIndex >= session.questionNO.length) {
+  /** 记录当前题的作答并推进进度（自动跳到下一题），返回是否答对 */
+  submitAnswer(bankId: string, sessionId: string, userAnswer: string): boolean {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null || session.currentIndex >= session.questionNO.length) {
       return false;
     }
-
-    const questions = getQuestions(uuid);
+    const questions = bankStore.getQuestions(bankId);
     const qIndex = session.questionNO[session.currentIndex];
     if (qIndex < 0 || qIndex >= questions.length) {
       return false;
@@ -139,28 +234,32 @@ export class AnswerSessionStore {
       isCorrect: isCorrect,
       timestamp: Date.now()
     });
-    session.currentIndex++;
+    session.currentIndex = Math.min(session.currentIndex + 1, session.questionNO.length);
     session.lastAnswerTime = Date.now();
-
-    this.dirty.add(uuid);
+    this.persist(bankId);
     return isCorrect;
   }
 
-  toggleStar(uuid: string, sessionId: string, questionIndex: number): void {
-    const session = this.get(uuid, sessionId);
-    if (!session || questionIndex < 0 || questionIndex >= session.marks.length) {
-      return;
-    }
-    session.marks[questionIndex].starred = !session.marks[questionIndex].starred;
-    this.dirty.add(uuid);
-  }
-
-  getCurrentQuestion(uuid: string, sessionId: string): singleQuestion | null {
-    const session = this.get(uuid, sessionId);
-    if (!session || !session.questionNO || session.currentIndex >= session.questionNO.length) {
+  /** 手动导航（上一题/下一题/回退），越界时收缩到合法范围 */
+  jumpTo(bankId: string, sessionId: string, targetIndex: number): singleQuestion | null {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null || session.questionNO.length === 0) {
       return null;
     }
-    const questions = getQuestions(uuid);
+    const clamped = Math.max(0, Math.min(targetIndex, session.questionNO.length - 1));
+    if (clamped !== session.currentIndex) {
+      session.currentIndex = clamped;
+      this.persist(bankId);
+    }
+    return this.getCurrentQuestion(bankId, sessionId);
+  }
+
+  getCurrentQuestion(bankId: string, sessionId: string): singleQuestion | null {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null || session.currentIndex >= session.questionNO.length) {
+      return null;
+    }
+    const questions = bankStore.getQuestions(bankId);
     const qIndex = session.questionNO[session.currentIndex];
     if (qIndex < 0 || qIndex >= questions.length) {
       return null;
@@ -168,20 +267,44 @@ export class AnswerSessionStore {
     return questions[qIndex];
   }
 
-  isFinished(uuid: string, sessionId: string): boolean {
-    const session = this.get(uuid, sessionId);
-    if (!session || !session.questionNO) {
+  toggleStar(bankId: string, sessionId: string, questionIndex: number): void {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null || questionIndex < 0 || questionIndex >= session.marks.length) {
+      return;
+    }
+    session.marks[questionIndex].starred = !session.marks[questionIndex].starred;
+    this.persist(bankId);
+  }
+
+  deleteSession(bankId: string, sessionId: string): void {
+    this.ensureLoaded(bankId);
+    const list = this.sessions.get(bankId)!;
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].sessionId === sessionId) {
+        list.splice(i, 1);
+        this.persist(bankId);
+        return;
+      }
+    }
+  }
+
+  isFinished(bankId: string, sessionId: string): boolean {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null) {
       return true;
     }
     return session.currentIndex >= session.questionNO.length;
   }
 
-  getProgress(uuid: string, sessionId: string): sessionSummary {
-    const session = this.get(uuid, sessionId);
-    if (!session) {
-      return { sessionId: '', total: 0, answered: 0, correct: 0, wrong: 0 };
+  getProgress(bankId: string, sessionId: string): sessionSummary {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null) {
+      return {
+        sessionId: sessionId, bankId: bankId, origin: 'full', mode: 'ordered',
+        createdAt: 0, lastAnswerTime: 0, total: 0, answered: 0, correct: 0,
+        wrong: 0, finished: true, position: 0
+      };
     }
-    const answered = session.answers.length;
     let correct = 0;
     for (let i = 0; i < session.answers.length; i++) {
       if (session.answers[i].isCorrect) {
@@ -190,161 +313,64 @@ export class AnswerSessionStore {
     }
     return {
       sessionId: session.sessionId,
-      total: session.questionNO ? session.questionNO.length : 0,
-      answered: answered,
+      bankId: session.bankId,
+      origin: session.origin,
+      mode: session.mode,
+      createdAt: session.createdAt,
+      lastAnswerTime: session.lastAnswerTime,
+      total: session.questionNO.length,
+      answered: session.answers.length,
       correct: correct,
-      wrong: answered - correct
+      wrong: session.answers.length - correct,
+      finished: session.currentIndex >= session.questionNO.length,
+      position: session.currentIndex
     };
   }
 
-  getSummaries(uuid: string): sessionSummary[] {
-    this.ensureLoaded(uuid);
-    const list = this.sessions.get(uuid)!;
+  getSummaries(bankId: string): sessionSummary[] {
+    this.ensureLoaded(bankId);
+    const list = this.sessions.get(bankId)!;
     const summaries: sessionSummary[] = [];
     for (let i = 0; i < list.length; i++) {
-      summaries.push(this.getProgress(uuid, list[i].sessionId));
+      summaries.push(this.getProgress(bankId, list[i].sessionId));
     }
+    // 最近练习的记录排在前面
+    summaries.sort((a: sessionSummary, b: sessionSummary): number => {
+      return (b.lastAnswerTime || b.createdAt) - (a.lastAnswerTime || a.createdAt);
+    });
     return summaries;
   }
 
-  createRetry(uuid: string, originalSessionId: string,
-    retryIncorrect: boolean, retryStarred: boolean): string {
-    const original = this.get(uuid, originalSessionId);
-    if (!original) {
-      return '';
-    }
-
-    const questions = getQuestions(uuid);
-    const targetIndices: number[] = [];
-
-    for (let i = 0; i < questions.length; i++) {
-      let include = false;
-
-      if (retryIncorrect) {
-        for (let j = 0; j < original.answers.length; j++) {
-          if (original.answers[j].questionIndex === i && !original.answers[j].isCorrect) {
-            include = true;
-            break;
-          }
-        }
-      }
-
-      if (retryStarred && original.marks[i] && original.marks[i].starred) {
-        include = true;
-      }
-
-      if (include) {
-        targetIndices.push(i);
-      }
-    }
-
-    if (targetIndices.length === 0) {
-      return '';
-    }
-
-    this.ensureLoaded(uuid);
-    const list = this.sessions.get(uuid)!;
-
-    const marks: answerMark[] = questions.map((q: singleQuestion): answerMark => ({
-      starred: false,
-      ignore: false
-    }));
-
-    const sessionId = util.generateRandomUUID();
-    list.push({
-      sessionId: sessionId,
-      lastAnswerTime: 0,
-      mode: 'incorrect',
-      starred: retryStarred && !retryIncorrect,
-      marks: marks,
-      questionNO: targetIndices,
-      answers: [],
-      currentIndex: 0
-    });
-
-    this.dirty.add(uuid);
-    return sessionId;
-  }
-
-  deleteSession(uuid: string, sessionId: string): void {
-    this.ensureLoaded(uuid);
-    const list = this.sessions.get(uuid)!;
-    for (let i = 0; i < list.length; i++) {
-      if (list[i].sessionId === sessionId) {
-        list.splice(i, 1);
-        this.dirty.add(uuid);
-        return;
-      }
-    }
-  }
-
-  jumpTo(uuid: string, sessionId: string, targetIndex: number): singleQuestion | null {
-    const session = this.get(uuid, sessionId);
-    if (!session || !session.questionNO || targetIndex < 0 || targetIndex >= session.questionNO.length) {
-      return null;
-    }
-    session.currentIndex = targetIndex;
-    this.dirty.add(uuid);
-    return this.getCurrentQuestion(uuid, sessionId);
-  }
-
-  getRecords(uuid: string, sessionId: string): answerRecord[] {
-    const session = this.get(uuid, sessionId);
-    return session ? session.answers : [];
-  }
-
-  getQuestionStatus(uuid: string, sessionId: string): questionStatus[] {
-    const session = this.get(uuid, sessionId);
-    if (!session || !session.questionNO) {
+  /** session 视角下每道题的状态（同一题多次作答以最后一次为准） */
+  getQuestionStatus(bankId: string, sessionId: string): questionStatus[] {
+    const session = this.getSession(bankId, sessionId);
+    if (session === null) {
       return [];
     }
-    const answerMap: Record<number, answerRecord> = {};
+    const lastAnswer: Map<number, answerRecord> = new Map();
     for (let i = 0; i < session.answers.length; i++) {
-      answerMap[session.answers[i].questionIndex] = session.answers[i];
+      lastAnswer.set(session.answers[i].questionIndex, session.answers[i]);
     }
     const result: questionStatus[] = [];
-    for (let i = 0; i < session.questionNO.length; i++) {
-      const qIndex = session.questionNO[i];
-      const record = answerMap[qIndex];
+    for (let pos = 0; pos < session.questionNO.length; pos++) {
+      const qIndex = session.questionNO[pos];
+      const record = lastAnswer.get(qIndex);
+      const status: AnswerStatus = record === undefined ? 'unanswered'
+        : (record.isCorrect ? 'correct' : 'wrong');
       result.push({
         questionIndex: qIndex,
-        status: record ? (record.isCorrect ? 'correct' : 'wrong') : 'unanswered',
-        starred: session.marks[qIndex]?.starred ?? false,
-        userAnswer: record ? record.userAnswer : undefined
+        position: pos,
+        status: status,
+        starred: session.marks[qIndex] !== undefined && session.marks[qIndex].starred,
+        userAnswer: record === undefined ? undefined : record.userAnswer
       });
     }
     return result;
   }
 
-  load(uuid: string): void {
-    const list = readSessionsFromDisk(uuid);
-    this.sessions.set(uuid, list);
-    this.dirty.delete(uuid);
-  }
-
-  save(uuid: string): void {
-    const list = this.sessions.get(uuid);
-    if (list === undefined) {
-      return;
-    }
-    writeSessionsToDisk(uuid, list);
-    this.dirty.delete(uuid);
-  }
-
-  saveAll(): void {
-    const keys = Array.from(this.dirty);
-    for (let i = 0; i < keys.length; i++) {
-      this.save(keys[i]);
-    }
-  }
-
-  isDirty(uuid: string): boolean {
-    return this.dirty.has(uuid);
-  }
-
-  release(uuid: string): void {
-    this.sessions.delete(uuid);
-    this.dirty.delete(uuid);
+  /** 题库被删除时丢弃其内存中的 session 缓存 */
+  forget(bankId: string): void {
+    this.sessions.delete(bankId);
   }
 }
 
