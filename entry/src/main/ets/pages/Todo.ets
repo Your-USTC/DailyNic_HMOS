@@ -58,7 +58,7 @@ struct TodoPage {
   /** 状态过滤：-1 全部，0 未完成，1 已完成（作业以 done || submitted 计） */
   @State filterStatus: number = -1;
   /** 是否展示筛选栏（类型/课程/状态下拉），搜索框常驻 */
-  @State showFilter: boolean = true;
+  @State showFilter: boolean = false;
   /** 编辑弹窗草稿：课程分类 */
   @State draftCourse: string = '';
   /** 默认学期课表中的课程名列表（去重），供快速填写 */
@@ -534,6 +534,7 @@ struct TodoPage {
                 .objectFit(ImageFit.Cover)
                 .borderRadius(8)
                 .draggable(false)
+                .autoResize(true)
                 .margin({ right: 6, top: 2 })
             }, (path: string) => path)
           }
@@ -573,7 +574,7 @@ struct TodoPage {
   editorSheet() {
     Column() {
       Row({ space: 5 }) {
-        Text(this.editingIndex >= 0 ? '编辑' : '新建')
+        Text(this.editingIndex >= 0 ? '编辑日程' : '新建日程')
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
@@ -604,7 +605,7 @@ struct TodoPage {
         })
 
         Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
-          Image($r('app.media.save'))
+          Image(this.editingIndex >= 0 ? $r('app.media.save') : $r('app.media.checkmark'))
             .width(24)
             .height(24)
             .draggable(false)
@@ -701,8 +702,9 @@ struct TodoPage {
                       .width(80)
                       .height(80)
                       .objectFit(ImageFit.Cover)
-                      .borderRadius(8)
+                      .borderRadius(12)
                       .draggable(false)
+                      .autoResize(true)
                       .onClick(() => ImagePreview.show(
                         this.draftImages.map((d: DraftImage): string => d.uri),
                         {
@@ -710,14 +712,14 @@ struct TodoPage {
                           showIndex: true,
                           closeOnClickImage: false
                         }))
-                    Text('×')
+                    Text('󰁖')
                       .fontSize(14)
                       .fontColor(Color.White)
-                      .width(20)
-                      .height(20)
+                      .width(24)
+                      .height(24)
                       .textAlign(TextAlign.Center)
-                      .borderRadius(10)
-                      .backgroundColor('#99000000')
+                      .borderRadius(12)
+                      .backgroundColor($r('sys.color.mask_secondary'))
                       .onClick(() => this.removeImage(index))
                   }
                   .margin({ right: 8, bottom: 8 })
@@ -911,6 +913,7 @@ struct TodoPage {
         }
         .alignItems(HorizontalAlign.Start)
         .width('90%')
+        .margin({ bottom: 16 })
       }
       .fadingEdge(true)
       .width('100%')
@@ -966,13 +969,14 @@ struct TodoPage {
                 this.refresh();
               })
             Toggle({ type: ToggleType.Button, isOn: this.showFilter }) {
-              Text('筛选').fontSize(13)
+              Image($r('app.media.filter'))
+                .width(22)
+                .height(22)
             }
+            .width(40)
             .height(40)
             // .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
-            .onChange((isOn: boolean) => {
-              this.showFilter = isOn;
-            })
+            .onChange((isOn: boolean) => this.getUIContext().animateTo({ duration: 200 }, () => { this.showFilter = isOn; }))
           }
           .width('100%')
 
@@ -1021,17 +1025,18 @@ struct TodoPage {
         .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : undefined)
         .backgroundBlurStyle(BackgroundImage.blurLevel)
         .width('100%')
-        .animation({ duration: 500, curve: Curve.Ease })
 
         if (this.todoList.length === 0) {
           Column() {
             Column() {
-              Image($r('app.media.read_book'))
+              Image($r('app.media.heavy_task'))
                 .width(128)
                 .interpolation(ImageInterpolation.Medium)
                 .draggable(false)
-              Text(this.hasFilterCondition() ? '没有匹配的内容' : '暂无内容，点击右上角新建')
+                .margin({ bottom: 6 })
+              Text(this.hasFilterCondition() ? $r('app.string.no_search_result') : $r('app.string.no_todo_info2'))
                 .fontSize(18)
+                .textAlign(TextAlign.Center)
             }
             .justifyContent(FlexAlign.Center)
             .backgroundBlurStyle(BackgroundImage.blurLevel)
@@ -1077,13 +1082,13 @@ struct TodoPage {
         blurStyle: BlurStyle.Regular
       })
     }
-    .title({ main: '待办与作业', sub: '尝鲜版' }, {
+    .title({ main: $r('app.string.todo_card_title'), sub: '尝鲜版' }, {
       backgroundBlurStyle: BackgroundImage.blurLevel,
       backgroundColor: BackgroundImage.blurLevel === undefined ? BackgroundImage.titleBackgroundColor : undefined
     })
     .backButtonIcon($r('app.media.close'))
     .menus(this.menuItems)
-    .backgroundColor(BackgroundImage.showImage ? '#0000' : $r('app.color.normal_background'))
+    .backgroundColor(BackgroundImage.showImage ? Color.Transparent : $r('app.color.normal_background'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
       this.loadCourseNames();

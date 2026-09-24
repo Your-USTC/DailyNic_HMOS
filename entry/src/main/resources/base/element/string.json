@@ -1153,8 +1153,20 @@
       "value": "待办事项"
     },
     {
-      "name": "no_todo_info",
-      "value": "暂无待办"
+      "name": "no_todo_info1",
+      "value": "今日无事一身轻~"
+    },
+    {
+      "name": "no_todo_info2",
+      "value": "所有任务…真的都完成了吗？\n不行！得再仔细想想…"
+    },
+    {
+      "name": "no_search_result",
+      "value": "唔，似乎没搜到你想要的呢…\n换个关键词试试？"
+    },
+    {
+      "name": "show_todo_on_start_page",
+      "value": "显示待办事项"
     },
     {
       "name": "not_specify",

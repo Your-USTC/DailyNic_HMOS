@@ -41,9 +41,10 @@ struct Todo_infoCard {
     if (this.todoList.length === 0) {
       ListItem() {
         Column() {
-          Text($r('app.string.no_todo_info'))
-            .fontSize(14)
-            .fontColor($r('app.color.transparent_text'))
+          Image($r('app.media.lying_on_lounge'))
+            .height(75)
+            .interpolation(ImageInterpolation.Medium)
+          Text($r('app.string.no_todo_info1'))
         }
         .width('100%')
         .height('100%')

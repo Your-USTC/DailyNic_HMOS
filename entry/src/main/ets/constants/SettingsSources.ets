@@ -8,6 +8,7 @@ export class SettingsData {
         new ItemData(1, $r('app.string.show_check_in'), $r('app.media.star'), $r('app.string.setting_toggle')),
         new ItemData(2, $r('app.string.show_schedule_on_start_page'), $r('app.media.list_square_bill'), $r("app.string.setting_toggle")),
         new ItemData(3, $r('app.string.show_exam_info_on_start_page'), $r('app.media.doc_plaintext_and_pencil'), $r("app.string.setting_toggle")),
+        new ItemData(16, $r('app.string.show_todo_on_start_page'), $r('app.media.list_square_bill'), $r("app.string.setting_toggle")),
         new ItemData(4, $r('app.string.theme_setting'), $r('app.media.penshape'))
       ],
       [

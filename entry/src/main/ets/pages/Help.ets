@@ -58,9 +58,7 @@ struct Help {
                 this.context.animateTo({
                   // 设置按钮收起展开动画效果
                   duration: 300,
-                  onFinish: () => {
-                    console.info('animation end');
-                  }
+                  // onFinish: () => {}
                 }, () => {
                   this.isContentShow[index] = !this.isContentShow[index];
                 });
@@ -90,11 +88,8 @@ struct Help {
             .borderRadius(20);
           };
         });
-
-        ListItem()
-          .visibility(Visibility.Hidden)
-          .height('50vp')
       }
+      .contentEndOffset(50)
       .padding({ left: 15, right: 15 })
       .margin({ left: 12, right: 12 })
       .scrollBar(BarState.Auto)

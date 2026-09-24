@@ -13,6 +13,7 @@ import ScheduleManager from '../utils/Classes/ScheduleManager'
 import * as tools from '../utils/tools'
 import UnifiedPreferences, { millisecondsPerWeek } from '../utils/UnifyPreference'
 import WriteCalendar from '../utils/WriteCalendar'
+import { TodoItem, TodoType, IndexedTodoItem, filterItems, getEffectiveTime } from '../utils/TodoStorage'
 
 import BackgroundImage, { presetColor } from '../utils/BgImageManager'
 import { GridComponent, MostRecentComponent } from '../view/GridComponent'
@@ -97,6 +98,7 @@ struct Index {
   @State showCheckIn: boolean = UnifiedPreferences.getBoolSync('showCheckIn', true);
   @State showRecentCourse: boolean = UnifiedPreferences.getBoolSync('showRecentCourse', true);
   @State showExamDetail: boolean = UnifiedPreferences.getBoolSync('showExamDetail', true);
+  @State showTodo: boolean = UnifiedPreferences.getBoolSync('showTodo', true);
   @State webAutoDarkMode: boolean = UnifiedPreferences.getBoolSync('webAutoDarkMode', true);
   @State webBackPress: boolean = UnifiedPreferences.getBoolSync('webBackPress', true);
   @State currentTime: Date = new Date();
@@ -105,6 +107,7 @@ struct Index {
   onPageShow(): void { // 切后台回来时也执行，即使不在当前页面
     console.log('test!!!')
     this.refreshInfo(); // 立即刷新，然后计划刷新
+    this.refreshTodo(); // 待办独立刷新，不随每分钟自动刷新
     this.scheduleAutoRefresh();
   }
 
@@ -152,6 +155,7 @@ struct Index {
     this.checkedInToday = GeneratedDestructArray_1[2];
     this.checkInContent = this.checkedInToday ? GeneratedDestructArray_1[3] : '';
     this.refreshInfo();
+    this.refreshTodo();
     // 初始化导航模式偏好（热更新时经AppStorage('adaptSplit')同步到.mode()）
     this.adaptSplit = UnifiedPreferences.getNumberSync('AdaptSplit', NavigationMode.Auto);
     // 初始化背景
@@ -265,6 +269,12 @@ struct Index {
           .onChange((value: boolean) => {
             UnifiedPreferences.putSync('showExamDetail', value);
           });
+      } else if (item.id === 16) {
+        Toggle({ type: ToggleType.Switch, isOn: $$this.showTodo })
+          .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
+          .onChange((value: boolean) => {
+            UnifiedPreferences.putSync('showTodo', value);
+          });
       } else if (item.id === 6) {
         Toggle({ type: ToggleType.Switch, isOn: $$this.webAutoDarkMode })
           .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
@@ -322,6 +332,40 @@ struct Index {
 
     examManager.readStoredExam();
     this.exams = examManager.allExamInfo.filter(item => this.currentTime.getTime() <= item.endTimeStamp);
+  }
+
+  /**
+   * 刷新首页待办事项。独立于 refreshInfo，不随每分钟自动刷新，
+   * 仅在页面显示、返回首页以及用户手动点击刷新按钮时调用。
+   */
+  @State todoList: IndexedTodoItem[] = [];
+  refreshTodo(): void {
+    const list = filterItems((item: TodoItem): boolean => !item.done && !item.submitted);
+    list.sort((a: IndexedTodoItem, b: IndexedTodoItem): number =>
+      getEffectiveTime(a.item) - getEffectiveTime(b.item));
+    this.todoList = list;
+  }
+
+  /** 毫秒时间戳 → 'M-d HH:mm'（与待办卡片保持一致） */
+  private todoFormatTime(ts: number): string {
+    const d = new Date(ts);
+    const pad = (n: number): string => (n < 10 ? '0' + n : '' + n);
+    return `${d.getMonth() + 1}-${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  /** 条目的时间描述文本，无时间时返回空串（与待办卡片保持一致） */
+  todoTimeDescription(item: TodoItem): string {
+    if (item.type === TodoType.Assignment) {
+      return item.ddl !== undefined ? `DDL ${this.todoFormatTime(item.ddl)}` : '';
+    }
+    const parts: string[] = [];
+    if (item.beginTime !== undefined) {
+      parts.push(`始 ${this.todoFormatTime(item.beginTime)}`);
+    }
+    if (item.endTime !== undefined) {
+      parts.push(`止 ${this.todoFormatTime(item.endTime)}`);
+    }
+    return parts.join('  ');
   }
 
   showMessage(message: string | ResourceStr, duration?: number) {
@@ -756,9 +800,19 @@ struct Index {
       ListItem() {
         Column() {
           Row() {
-            Text('待办事项')
+            Button({ type: ButtonType.Circle, buttonStyle: ButtonStyleMode.NORMAL }) {
+              Image($r('app.media.refresh'))
+                .height(20)
+                .width(20)
+                .draggable(false)
+            }
+            .height(36)
+            .width(36)
+            .visibility(this.showTodo ? Visibility.Visible : Visibility.Hidden)
+            .onClick(() => this.refreshTodo())
+
+            Text($r('app.string.todo_card_title'))
               .textAlign(TextAlign.Center)
-              .margin({ left: 36 })
               .layoutWeight(1)
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
@@ -781,6 +835,59 @@ struct Index {
               this.pageInfo.pushPath({ name: 'Todo' });
             }
           })
+
+          if (this.showTodo) {
+            Divider();
+            if (this.todoList.length === 0) {
+              Column() {
+                Image($r('app.media.lying_on_lounge'))
+                  .height(100)
+                  .draggable(false);
+                Text($r('app.string.no_todo_info1'))
+                  .textAlign(TextAlign.Center);
+              }
+              .width('100%')
+              .margin({ top: 12, bottom: 12 });
+            } else {
+              ForEach(this.todoList, (entry: IndexedTodoItem, index: number) => {
+                Column() {
+                  Row() {
+                    Text((entry.item.course ? entry.item.course + '：' : '') + entry.item.text)
+                      .layoutWeight(1)
+                      .fontSize(16)
+                      .fontWeight(FontWeight.Bold)
+                      .maxLines(2)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .decoration({ type: entry.item.done ? TextDecorationType.LineThrough : TextDecorationType.None })
+
+                    if (entry.item.type === TodoType.Assignment) {
+                      Text('作业')
+                        .fontSize(12)
+                        .fontColor($r('app.color.bright_blue'))
+                        .margin({ left: 6 })
+                    }
+                  }
+                  .width('100%')
+                  .alignItems(VerticalAlign.Top)
+
+                  if (this.todoTimeDescription(entry.item) !== '') {
+                    Text(this.todoTimeDescription(entry.item))
+                      .fontSize(13)
+                      .fontColor(getEffectiveTime(entry.item) < this.currentTime.getTime()
+                        ? $r('app.color.red') : $r('app.color.transparent_text'))
+                      .margin({ top: 2 })
+                  }
+                }
+                .padding({ left: 15, right: 15 })
+                .margin({ top: 7, bottom: 7 })
+                .alignItems(HorizontalAlign.Start)
+
+                if (index < this.todoList.length - 1) {
+                  Divider().padding({ left: 15, right: 15 });
+                }
+              })
+            }
+          }
         }
       }
       .width('100%')
@@ -1000,6 +1107,9 @@ struct Index {
 
       case 6:
       case 7:
+        break;
+
+      case 16:
         break;
 
       case 8:
