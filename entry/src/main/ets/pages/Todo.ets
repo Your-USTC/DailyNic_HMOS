@@ -63,6 +63,8 @@ struct TodoPage {
   @State draftCourse: string = '';
   /** 默认学期课表中的课程名列表（去重），供快速填写 */
   @State courseNames: string[] = [];
+  /** 搜索防抖定时器 */
+  searchDebounceTimer: number | null = null;
 
   // 编辑弹窗草稿
   @State draftType: TodoType = TodoType.Todo;
@@ -966,7 +968,12 @@ struct TodoPage {
               .layoutWeight(1)
               .onChange((input: string) => {
                 this.searchText = input;
-                this.refresh();
+                if (this.searchDebounceTimer !== null) {
+                  clearTimeout(this.searchDebounceTimer);
+                }
+                this.searchDebounceTimer = setTimeout(() => {
+                  this.refresh();
+                }, 500);
               })
             Toggle({ type: ToggleType.Button, isOn: this.showFilter }) {
               Image($r('app.media.filter'))
