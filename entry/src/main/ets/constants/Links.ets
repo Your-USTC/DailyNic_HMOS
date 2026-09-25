@@ -81,9 +81,7 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.WenDangXieZuo'), url: [{ url: 'https://latex.ustc.edu.cn' }], icon: $r('app.media.WenDangXieZuo') },
     { title: $r('app.string.KeDaOJ'), url: [{ url: 'https://oj.ustc.edu.cn' }], icon: $r('app.media.KeDaOJ') },
     { title: $r('app.string.JiYuanKeYanPingTai'), url: [{ url: 'https://cscourse.ustc.edu.cn' }], icon: $r('app.media.JiYuanKeYanPingTai') },
-    { title: $r('app.string.Gitlab'), icon: $r('app.media.GitLab'), url: [
-      { url: 'https://git.ustc.edu.cn', subtitle: '科大官方 GitLab' },
-      { url: 'https://git.lug.ustc.edu.cn', subtitle: 'Linux 用户协会 GitLab' }] },
+    { title: $r('app.string.Gitlab'), url: [{ url: 'https://git.ustc.edu.cn'}], icon: $r('app.media.GitLab') },
     { title: $r('app.string.Vlab'), url: [{ url: 'https://vlab.ustc.edu.cn' }], icon: $r('app.media.VlabShiYanZhongXin') },
     { title: $r('app.string.CiYuanJiHua'), url: [{ url: 'https://llm.ustc.edu.cn/api/auth/oauth/login' }], icon: $r('app.media.CiYuanJiHua') },
     { title: $r('app.string.107'), url: [{ url: 'https://107.ustc.edu.cn' }], icon: $r('app.media.107') },
@@ -111,7 +109,7 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.LiFanXiaoDengJi'), url: [{ url: 'https://lfxdj.ustc.edu.cn' }], icon: $r('app.media.LiFanXiaoDengJi') },
     { title: $r('app.string.XueGongYiTiHua'), url: [{ url: 'https://xgyth.ustc.edu.cn' }], icon: $r('app.media.XueGongYiTiHua') },
     { title: $r('app.string.YuanXiZhuanYe'), url: [{ url: 'https://www.teach.ustc.edu.cn/education/239.html' }], icon: $r('app.media.YuanXiZhuanYe') },
-    { title: $r('app.string.DianZiQianShu'), url: [{ url: 'https://esign.ustc.edu.cn' }], icon: $r('app.media.default_function_icon') }
+    { title: $r('app.string.DianZiQianShu'), url: [{ url: 'https://esign.ustc.edu.cn' }], icon: $r('app.media.esign') }
   ]},
   // 校园生活
   { title: '\udb82\udc0d 校园生活', set: [
