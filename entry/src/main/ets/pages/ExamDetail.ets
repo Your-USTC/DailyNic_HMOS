@@ -1,5 +1,4 @@
 
-import { CounterComponent, CounterType } from '@kit.ArkUI'
 import * as tools from '../utils/tools'
 import examManager, { areExamAttributesEqual } from '../utils/ExamManager';
 import { examAttribute } from '../utils/ExamStorage';
@@ -29,11 +28,12 @@ struct ExamDetail {
 
   private newExamInfo: examAttribute = { id: '', type: '', name: '', date: '', classroom: '', building: '', campus: '', info: '', beginTimeStamp: 0, endTimeStamp: 0, importance: 5};
   private oriExamInfo: examAttribute = { id: '', type: '', name: '', date: '', classroom: '', building: '', campus: '', info: '', beginTimeStamp: 0, endTimeStamp: 0, importance: 5};
-  private date: string = '2025-07-21';
-  private startHour: number = 0;
-  private startMinute: number = 0;
-  private endHour: number = 0;
-  private endMinute: number = 0;
+  // 弹窗内日期/时间草稿，@State 保证选择器回调后胶囊标签刷新
+  @State date: string = '2025-07-21';
+  @State startHour: number = 0;
+  @State startMinute: number = 0;
+  @State endHour: number = 0;
+  @State endMinute: number = 0;
 
   @Builder examDetailDialog() {
     Column() {
@@ -182,84 +182,47 @@ struct ExamDetail {
         .margin({ bottom: 5 });
 
         Row() {
-          Text($r('app.string.date_colon'));
-          CalendarPicker({ selected: new Date(this.oriExamInfo.date.slice(0, 10)) })
-            .edgeAlign(CalendarAlign.CENTER)
-            .onChange((value) => {
-              this.date = `${value.getFullYear().toString().padStart(4, '0')}-${(value.getMonth() + 1).toString().padStart(2, '0')}-${value.getDate().toString().padStart(2, '0')}`;
-            })
+          Text($r('app.string.date_colon'))
+            .layoutWeight(1)
+          Text(`\udb80\udfda ${this.date}`)
+            .fontSize(14)
+            .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .borderRadius(16)
+            .backgroundColor($r('app.color.list_item_count_background'))
+            .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+            .onClick(() => this.pickDate())
         }
+        .width('100%')
         .margin({ bottom: 5 });
 
         Row() {
-          Text($r('app.string.start_time'));
-          CounterComponent({
-            options: {
-              type: CounterType.INLINE,
-              inlineOptions: {
-                value: this.startHour,
-                min: 0,
-                step: 1,
-                max: 23,
-                textWidth: 25,
-                onChange: (value: number) => {
-                  this.startHour = value;
-                }
-              }
-            }
-          })
-          Text(' : ')
-          CounterComponent({
-            options: {
-              type: CounterType.INLINE,
-              inlineOptions: {
-                value: this.startMinute,
-                min: 0,
-                step: 1,
-                max: 59,
-                textWidth: 25,
-                onChange: (value: number) => {
-                  this.startMinute = value;
-                }
-              }
-            }
-          })
+          Text($r('app.string.start_time'))
+            .layoutWeight(1)
+          Text(`\udb81\udc8e ${this.pad2(this.startHour)}:${this.pad2(this.startMinute)}`)
+            .fontSize(14)
+            .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .borderRadius(16)
+            .backgroundColor($r('app.color.list_item_count_background'))
+            .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+            .onClick(() => this.pickTime(false))
         }
+        .width('100%')
         .margin({ bottom: 5 });
         Row() {
-          Text($r('app.string.end_time'));
-          CounterComponent({
-            options: {
-              type: CounterType.INLINE,
-              inlineOptions: {
-                value: this.endHour,
-                min: 0,
-                step: 1,
-                max: 23,
-                textWidth: 25,
-                onChange: (value: number) => {
-                  this.endHour = value;
-                }
-              }
-            }
-          })
-          Text(' : ')
-          CounterComponent({
-            options: {
-              type: CounterType.INLINE,
-              inlineOptions: {
-                value: this.endMinute,
-                min: 0,
-                step: 1,
-                max: 59,
-                textWidth: 25,
-                onChange: (value: number) => {
-                  this.endMinute = value;
-                }
-              }
-            }
-          })
+          Text($r('app.string.end_time'))
+            .layoutWeight(1)
+          Text(`\udb81\udc8e ${this.pad2(this.endHour)}:${this.pad2(this.endMinute)}`)
+            .fontSize(14)
+            .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+            .borderRadius(16)
+            .backgroundColor($r('app.color.list_item_count_background'))
+            .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+            .onClick(() => this.pickTime(true))
         }
+        .width('100%')
 
         Row() {
           Text($r('app.string.class_detail_location'));
@@ -320,6 +283,43 @@ struct ExamDetail {
     }
     .width('100%')
     .padding({ top: 16, right: 16, left: 16});
+  }
+
+  pad2(value: number): string {
+    return value.toString().padStart(2, '0');
+  }
+
+  /** 弹出日期选择器，修改考试日期 */
+  pickDate(): void {
+    const parts = this.date.split('-');
+    DatePickerDialog.show({
+      selected: new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+      onDateAccept: (value: Date) => {
+        this.date =
+          `${value.getFullYear()}-${this.pad2(value.getMonth() + 1)}-${this.pad2(value.getDate())}`;
+      }
+    });
+  }
+
+  /** target 为 true 时修改结束时间，false 时修改开始时间 */
+  pickTime(target: boolean): void {
+    const hour = target ? this.endHour : this.startHour;
+    const minute = target ? this.endMinute : this.startMinute;
+    const selected = new Date();
+    selected.setHours(hour, minute, 0, 0);
+    TimePickerDialog.show({
+      selected: selected,
+      useMilitaryTime: true,
+      onAccept: (value: TimePickerResult) => {
+        if (target) {
+          this.endHour = value.hour;
+          this.endMinute = value.minute;
+        } else {
+          this.startHour = value.hour;
+          this.startMinute = value.minute;
+        }
+      }
+    });
   }
 
   menuItems: Array<NavigationMenuItem> = [
