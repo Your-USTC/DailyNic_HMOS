@@ -74,6 +74,11 @@
       "name": "Todo",
       "pageSourceFile": "src/main/ets/pages/Todo.ets",
       "buildFunction": "TodoBuilder"
+    },
+    {
+      "name": "GetHomework",
+      "pageSourceFile": "src/main/ets/pages/GetHomework.ets",
+      "buildFunction": "GHWBuilder"
     }
   ]
 }

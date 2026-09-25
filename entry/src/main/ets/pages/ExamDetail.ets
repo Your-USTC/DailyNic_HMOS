@@ -373,7 +373,7 @@ struct ExamDetail {
     },
     {
       value: $r('app.string.online_exam_info'),
-      icon: $r('app.media.get'),
+      icon: $r('app.media.cloud_download'),
       action: () => {
         this.pathStack.pushPath({
           name: "GetSchedule",
