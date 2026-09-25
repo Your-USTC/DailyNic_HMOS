@@ -79,6 +79,8 @@ struct TodoPage {
     selectedBackgroundColor: presetColor[BackgroundImage.themeColor].accentColor
   });
   @State draftText: string = '';
+  /** 编辑弹窗草稿：补充描述 */
+  @State draftDescription: string = '';
   @State draftBeginDisabled: boolean = false;
   @State draftEndDisabled: boolean = true;
   @State draftBeginDate: string = '2026-01-01';
@@ -122,7 +124,8 @@ struct TodoPage {
       if (keyword !== '') {
         const inText = item.text.toLowerCase().includes(keyword);
         const inCourse = (item.course ?? '').toLowerCase().includes(keyword);
-        if (!inText && !inCourse) {
+        const inDesc = (item.description ?? '').toLowerCase().includes(keyword);
+        if (!inText && !inCourse && !inDesc) {
           return false;
         }
       }
@@ -183,6 +186,7 @@ struct TodoPage {
       this.editingIndex = -1;
       this.draftType = TodoType.Todo;
       this.draftText = '';
+      this.draftDescription = '';
       this.draftCourse = '';
       this.draftBeginDisabled = true;
       this.draftEndDisabled = true;
@@ -192,6 +196,7 @@ struct TodoPage {
       this.editingIndex = indexed.index;
       this.draftType = item.type;
       this.draftText = item.text;
+      this.draftDescription = item.description ?? '';
       this.draftCourse = item.course ?? '';
       this.draftPriority = item.priority ?? DEFAULT_PRIORITY;
       this.draftImages = (item.imagePaths ?? []).map((path: string): DraftImage => {
@@ -241,6 +246,9 @@ struct TodoPage {
     };
     if (this.draftCourse.trim() !== '') {
       item.course = this.draftCourse.trim();
+    }
+    if (this.draftDescription.trim() !== '') {
+      item.description = this.draftDescription.trim();
     }
     if (this.draftType === TodoType.Assignment) {
       if (!this.draftEndDisabled) {
@@ -336,6 +344,7 @@ struct TodoPage {
     return {
       type: item.type,
       text: item.text,
+      description: item.description,
       course: item.course,
       beginTime: item.beginTime,
       endTime: item.endTime,
@@ -480,6 +489,15 @@ struct TodoPage {
             })
         }
         .fontSize(15)
+
+        if (indexed.item.description !== undefined && indexed.item.description !== '') {
+          Text(indexed.item.description)
+            .fontSize(12)
+            .fontColor($r('app.color.normal_text'))
+            .maxLines(3)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .width('100%')
+        }
 
         // 信息行：时间与徽章同行，左对齐
         Row({ space: 8 }) {
@@ -644,6 +662,18 @@ struct TodoPage {
               .layoutWeight(1)
               .onChange((input: string) => {
                 this.draftText = input;
+              })
+          }
+          .margin({ bottom: 5 })
+
+          // 补充描述
+          Row() {
+            Text('描述：')
+            TextArea({ text: this.draftDescription })
+              .maxLines(4)
+              .layoutWeight(1)
+              .onChange((input: string) => {
+                this.draftDescription = input;
               })
           }
           .margin({ bottom: 5 })
@@ -901,7 +931,7 @@ struct TodoPage {
         Column({ space: 8 }) {
           // 搜索框 + 筛选栏开关
           Row({ space: 8 }) {
-            Search({ placeholder: '搜索内容或课程' })
+            Search({ placeholder: '搜索内容、描述或课程' })
               .margin(0)
               .layoutWeight(1)
               .onChange((input: string) => {
