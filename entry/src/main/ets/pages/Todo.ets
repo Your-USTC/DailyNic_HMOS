@@ -329,6 +329,7 @@ struct TodoPage {
         onConfirm: () => {
           if (this.editingIndex >= 0) {
             removeItem(this.editingIndex);
+            this.editingIndex = -1;
           }
           this.showSheet = false;
           this.refresh();

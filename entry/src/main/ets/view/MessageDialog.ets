@@ -9,6 +9,8 @@ export default struct MessageDialog {
   cancelColor?: ResourceColor;
   onConfirm: () => void = () => {};
   onCancel: () => void = () => {};
+  /** close() 为异步退场，退场动效期间按钮仍可命中点击，用一次性标记防止连点重复触发回调 */
+  private handled: boolean = false;
 
   build() {
     Column({ space: 10 }) {
@@ -26,6 +28,8 @@ export default struct MessageDialog {
           .buttonStyle(ButtonStyleMode.TEXTUAL)
           .width('50%')
           .onClick(() => {
+            if (this.handled) return;
+            this.handled = true;
             this.onCancel();
             this.controller.close();
           })
@@ -36,6 +40,8 @@ export default struct MessageDialog {
           .width('50%')
           .backgroundColor(this.confirmColor || presetColor[BackgroundImage.themeColor].accentColor)
           .onClick(() => {
+            if (this.handled) return;
+            this.handled = true;
             this.onConfirm();
             this.controller.close();
           })
