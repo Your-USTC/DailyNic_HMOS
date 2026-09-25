@@ -11,7 +11,6 @@ import { classAttribute } from '../constants/ScheduleSources';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { fileUri } from '@kit.CoreFileKit';
 import {
-  CounterComponent, CounterType,
   SegmentButton, SegmentButtonOptions, SegmentButtonItemTuple
 } from '@kit.ArkUI';
 import { ImagePreview } from 'module_imagepreview';
@@ -737,156 +736,72 @@ struct TodoPage {
           if (this.draftType === TodoType.Todo) {
             // 待办：开始时间
             Row() {
-              Text($r('app.string.start_time_colon'))
-                .layoutWeight(1)
-              Toggle({ type: ToggleType.Checkbox, isOn: this.draftBeginDisabled })
+              Toggle({ type: ToggleType.Checkbox, isOn: !this.draftBeginDisabled })
                 .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
                 .onChange((isOn: boolean) => {
-                  this.draftBeginDisabled = isOn;
+                  this.draftBeginDisabled = !isOn;
                 })
-              Text($r('app.string.not_specify'))
-            }
+              Text($r('app.string.start_time')).layoutWeight(1)
 
-            Row() {
-              Text(this.draftBeginDate)
+              Text(`\udb80\udfda ${this.draftBeginDate}`)
+                .fontSize(14)
+                .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .borderRadius(16)
+                .backgroundColor($r('app.color.list_item_count_background'))
+                .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+                .visibility(this.draftBeginDisabled ? Visibility.None : Visibility.Visible)
                 .onClick(() => this.pickDate(false))
-              CounterComponent({
-                options: {
-                  type: CounterType.INLINE,
-                  inlineOptions: {
-                    value: this.beginHour,
-                    min: 0,
-                    step: 1,
-                    max: 23,
-                    textWidth: 25,
-                    onChange: (value: number) => {
-                      this.beginHour = value;
-                    }
-                  }
-                }
-              })
-              Text(' : ')
-              CounterComponent({
-                options: {
-                  type: CounterType.INLINE,
-                  inlineOptions: {
-                    value: this.beginMinute,
-                    min: 0,
-                    step: 1,
-                    max: 59,
-                    textWidth: 25,
-                    onChange: (value: number) => {
-                      this.beginMinute = value;
-                    }
-                  }
-                }
-              })
+              Text(this.draftBeginDisabled ? $r('app.string.not_specify') : `\udb81\udc8e ${this.pad2(this.beginHour)}:${this.pad2(this.beginMinute)}`)
+                .fontSize(14)
+                .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                .margin({ left: 6 })
+                .borderRadius(16)
+                .backgroundColor($r('app.color.list_item_count_background'))
+                .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+                .onClick(() => this.pickTime(false))
+                .enabled(!this.draftBeginDisabled)
             }
             .width('100%')
-            .margin({ bottom: 5 })
-            .visibility(this.draftBeginDisabled ? Visibility.None : Visibility.Visible)
+            .margin({ bottom: 8 })
 
-            // 待办：截止时间
-            Row() {
-              Text($r('app.string.end_time_colon'))
-                .layoutWeight(1)
-              Toggle({ type: ToggleType.Checkbox, isOn: this.draftEndDisabled })
-                .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
-                .onChange((isOn: boolean) => {
-                  this.draftEndDisabled = isOn;
-                })
-              Text($r('app.string.not_specify'))
-            }
+          }
 
-            Row() {
-              Text(this.draftEndDate)
-                .onClick(() => this.pickDate(true))
-              CounterComponent({
-                options: {
-                  type: CounterType.INLINE,
-                  inlineOptions: {
-                    value: this.endHour,
-                    min: 0,
-                    step: 1,
-                    max: 23,
-                    textWidth: 25,
-                    onChange: (value: number) => {
-                      this.endHour = value;
-                    }
-                  }
-                }
+          // 截止时间 / DDL：待办与作业共用同一行，仅标题不同
+          Row() {
+            Toggle({ type: ToggleType.Checkbox, isOn: !this.draftEndDisabled })
+              .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
+              .onChange((isOn: boolean) => {
+                this.draftEndDisabled = !isOn;
               })
-              Text(' : ')
-              CounterComponent({
-                options: {
-                  type: CounterType.INLINE,
-                  inlineOptions: {
-                    value: this.endMinute,
-                    min: 0,
-                    step: 1,
-                    max: 59,
-                    textWidth: 25,
-                    onChange: (value: number) => {
-                      this.endMinute = value;
-                    }
-                  }
-                }
-              })
-            }
-            .visibility(this.draftEndDisabled ? Visibility.None : Visibility.Visible)
-            .width('100%')
-          } else {
-            // 作业：DDL
-            Row() {
-              Text('截止时间')
-                .layoutWeight(1)
-              Toggle({ type: ToggleType.Checkbox, isOn: this.draftEndDisabled })
-                .selectedColor(presetColor[BackgroundImage.themeColor].accentColor)
-                .onChange((isOn: boolean) => {
-                  this.draftEndDisabled = isOn;
-                })
-              Text($r('app.string.not_specify'))
-            }
+            Text($r('app.string.end_time'))
+              .layoutWeight(1)
 
-            Row() {
-              Text(this.draftEndDate)
-                .onClick(() => this.pickDate(true))
-              CounterComponent({
-                options: {
-                  type: CounterType.INLINE,
-                  inlineOptions: {
-                    value: this.endHour,
-                    min: 0,
-                    step: 1,
-                    max: 23,
-                    textWidth: 25,
-                    onChange: (value: number) => {
-                      this.endHour = value;
-                    }
-                  }
-                }
-              })
-              Text(' : ')
-              CounterComponent({
-                options: {
-                  type: CounterType.INLINE,
-                  inlineOptions: {
-                    value: this.endMinute,
-                    min: 0,
-                    step: 1,
-                    max: 59,
-                    textWidth: 25,
-                    onChange: (value: number) => {
-                      this.endMinute = value;
-                    }
-                  }
-                }
-              })
-            }
-            .width('100%')
-            .margin({ bottom: 5 })
-            .visibility(this.draftEndDisabled ? Visibility.None : Visibility.Visible)
+            Text(`\udb80\udfda ${this.draftEndDate}`)
+              .fontSize(14)
+              .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .borderRadius(16)
+              .backgroundColor($r('app.color.list_item_count_background'))
+              .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+              .visibility(this.draftEndDisabled ? Visibility.None : Visibility.Visible)
+              .onClick(() => this.pickDate(true))
+            Text(this.draftEndDisabled ? $r('app.string.not_specify') : `\udb81\udc8e ${this.pad2(this.endHour)}:${this.pad2(this.endMinute)}`)
+              .fontSize(14)
+              .fontColor(presetColor[BackgroundImage.themeColor].accentColor)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .margin({ left: 6 })
+              .borderRadius(16)
+              .backgroundColor($r('app.color.list_item_count_background'))
+              .border({ width: 1, color: presetColor[BackgroundImage.themeColor].accentColor })
+              .onClick(() => this.pickTime(true))
+              .enabled(!this.draftEndDisabled)
+          }
+          .width('100%')
+          .margin({ bottom: 8 })
 
+          if (this.draftType === TodoType.Assignment) {
             // 作业：提交渠道多选
             Column() {
               Text($r('app.string.submit_channel'))
@@ -942,6 +857,29 @@ struct TodoPage {
           this.draftEndDate = picked;
         } else {
           this.draftBeginDate = picked;
+        }
+      }
+    });
+  }
+
+  /** target 为 true 时修改截止时间，false 时修改开始时间 */
+  pickTime(target: boolean): void {
+    const hour = target ? this.endHour : this.beginHour;
+    const minute = target ? this.endMinute : this.beginMinute;
+    const selected = new Date();
+    selected.setHours(hour, minute, 0, 0);
+    TimePickerDialog.show({
+      selected: selected,
+      useMilitaryTime: true,
+      onAccept: (value: TimePickerResult) => {
+        const h = value.hour;
+        const m = value.minute;
+        if (target) {
+          this.endHour = h;
+          this.endMinute = m;
+        } else {
+          this.beginHour = h;
+          this.beginMinute = m;
         }
       }
     });

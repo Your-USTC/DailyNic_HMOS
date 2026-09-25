@@ -509,12 +509,12 @@
       "value": "日期："
     },
     {
-      "name": "start_time_colon",
-      "value": "开始时间："
+      "name": "start_time",
+      "value": "开始时间"
     },
     {
-      "name": "end_time_colon",
-      "value": "结束时间："
+      "name": "end_time",
+      "value": "截止时间"
     },
     {
       "name": "class_detail_name",

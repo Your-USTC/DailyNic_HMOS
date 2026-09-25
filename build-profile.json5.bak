@@ -5,8 +5,8 @@
       {
         "name": "default",
         "signingConfig": "default",
-        "targetSdkVersion": "6.1.0(23)",
-        "compatibleSdkVersion": "6.1.0(23)",
+        "targetSdkVersion": "6.0.0(20)",
+        "compatibleSdkVersion": "5.1.0(18)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
@@ -37,10 +37,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "module_imagepreview",
-      "srcPath": "./entry/src/modules/ImagePreview"
     }
   ]
 

@@ -192,7 +192,7 @@ struct ExamDetail {
         .margin({ bottom: 5 });
 
         Row() {
-          Text($r('app.string.start_time_colon'));
+          Text($r('app.string.start_time'));
           CounterComponent({
             options: {
               type: CounterType.INLINE,
@@ -227,7 +227,7 @@ struct ExamDetail {
         }
         .margin({ bottom: 5 });
         Row() {
-          Text($r('app.string.end_time_colon'));
+          Text($r('app.string.end_time'));
           CounterComponent({
             options: {
               type: CounterType.INLINE,
