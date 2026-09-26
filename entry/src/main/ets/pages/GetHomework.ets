@@ -5,9 +5,10 @@ import accountInfoProvider from '../utils/Encryption';
 import { fillInformationJS } from '../utils/tools';
 import UnifiedPreferences, { PASSWORD_KEY, REMIND_KEY, UID_KEY } from '../utils/UnifyPreference';
 import { ExceptionPrompt, MarginType } from '@kit.ArkUI';
+import { addItem, TodoItem, TodoType, SubmitChannel, DEFAULT_PRIORITY } from '../utils/TodoStorage';
 
 /**
- * BB 作业上传页面提取出的作业信息，通过 pathStack.pop 传回待办页。
+ * BB 作业上传页面提取出的作业信息，导入时由本页直接组装为待办写入 TodoStorage。
  */
 export interface BBHomeworkInfo {
   /** 作业标题（已去掉“上载作业：”前缀） */
@@ -49,9 +50,19 @@ const homeworkQueryJS = `
         const text = field.innerText;
         const dm = text.match(/(\\d{4})[年\\-\\/.](\\d{1,2})[月\\-\\/.](\\d{1,2})/);
         if (dm) {
+            let hour = 23;
+            let minute = 59;
             const tm = text.match(/(\\d{1,2}):(\\d{2})/);
-            ddl = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]),
-                tm ? Number(tm[1]) : 23, tm ? Number(tm[2]) : 59).getTime();
+            if (tm) {
+                hour = Number(tm[1]);
+                minute = Number(tm[2]);
+                // 十二小时制标记：中文“下午5:00”在时间前，英文“5:00 PM”在时间后
+                const isPm = /[下晚][\\s\\u00a0]*午|[Pp]\\s*\\.?\\s*[Mm]/.test(text);
+                const isAm = /[上早凌][\\s\\u00a0]*[午晨]|[Aa]\\s*\\.?\\s*[Mm]/.test(text);
+                if (isPm && hour < 12) { hour += 12; }
+                else if (isAm && hour === 12) { hour = 0; }
+            }
+            ddl = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), hour, minute).getTime();
         }
         break;
     }
@@ -83,15 +94,13 @@ struct HomeworkImportPage {
   })
   @State loadingProgress: number = 0;
   @State loadError: string = '';
-  /** 当前是否处于作业上传页面（用于显示操作提示） */
-  @State isUploadPage: boolean = false;
   @State showGetHint: boolean = true;
 
-  /** 执行页面脚本提取作业信息，成功后携带结果返回待办页 */
+  /** 执行页面脚本提取作业信息，直接写入待办存储；页面停留以便连续导入多个作业 */
   importHomework(): void {
     this.webviewController.runJavaScript(homeworkQueryJS, (error, result) => {
       if (error) {
-        this.getUIContext().getPromptAction().showToast({ message: '导入失败，请重试', duration: 2000 });
+        this.getUIContext().getPromptAction().showToast({ message: $r('app.string.import_failed'), duration: 2000 });
         return;
       }
       let info: BBHomeworkInfo | null = null;
@@ -111,11 +120,28 @@ struct HomeworkImportPage {
       }
       if (info === null || info.title === undefined || info.title.trim() === '') {
         this.getUIContext().getPromptAction().showToast(
-          { message: '请先进入作业的“上载作业”页面再点击导入', duration: 2500 });
+          { message: '请先进入作业的「上载作业」页面再导入', duration: 2500 });
         return;
       }
-      this.getUIContext().getPromptAction().showToast({ message: `已读取：${info.title}` });
-      this.pathStack.pop(info);
+      const item: TodoItem = {
+        type: TodoType.Assignment,
+        text: info.title,
+        done: false,
+        submitted: false,
+        channels: [SubmitChannel.Blackboard],
+        priority: DEFAULT_PRIORITY
+      };
+      if (info.course !== undefined && info.course !== '') {
+        item.course = info.course;
+      }
+      if (info.description !== undefined && info.description !== '') {
+        item.description = info.description;
+      }
+      if (info.ddl !== null && info.ddl !== undefined) {
+        item.ddl = info.ddl;
+      }
+      addItem(item);
+      this.getUIContext().getPromptAction().showToast({ message: $r('app.string.import_success') });
     })
   }
 
@@ -208,7 +234,6 @@ struct HomeworkImportPage {
           })
           .onPageBegin(() => {
             this.loadError = '';
-            this.isUploadPage = this.webviewController.getUrl().includes('uploadAssignment');
           })
           .onPageEnd(() => {
             // 跳转到统一身份认证登录页时自动填充账号密码
@@ -270,18 +295,16 @@ struct HomeworkImportPage {
           .alignItems(HorizontalAlign.Center)
         }
 
-        if (this.isUploadPage) {
-          ExceptionPrompt({
-            options: {
-              tip: '已进入作业上传页面，点击右上角的导入按钮即可添加为作业',
-              marginType: MarginType.DEFAULT_MARGIN,
-              marginTop: 7,
-              isShown: this.showGetHint,
-              icon: $r('app.media.lightbulb')
-            },
-            onTipClick: () => this.showGetHint = false
-          })
-        }
+        ExceptionPrompt({
+          options: {
+            tip: '登录后进入「作业区→上载作业」，在右上角可导入为作业',
+            marginType: MarginType.DEFAULT_MARGIN,
+            marginTop: 7,
+            isShown: this.showGetHint,
+            icon: $r('app.media.lightbulb')
+          },
+          onTipClick: () => this.showGetHint = false
+        })
 
         Line()
           .visibility(this.loadingProgress == 100 ? Visibility.None : Visibility.Visible)

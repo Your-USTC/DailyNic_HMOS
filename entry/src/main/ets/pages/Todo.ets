@@ -14,7 +14,6 @@ import {
   SegmentButton, SegmentButtonOptions, SegmentButtonItemTuple
 } from '@kit.ArkUI';
 import { ImagePreview } from 'module_imagepreview';
-import { BBHomeworkInfo } from './GetHomework';
 
 /** 提交渠道显示名，下标与 SubmitChannel 枚举值对应 */
 const CHANNEL_NAMES: string[] = ['BB系统', 'QQ', '邮箱', '线上', '线下'];
@@ -928,44 +927,9 @@ struct TodoPage {
     {
       value: '导入作业',
       icon: $r('app.media.cloud_download'),
-      action: () => {
-        this.openHomeworkImport();
-      }
+      action: () => this.pathStack.pushPath({ name: 'GetHomework' })
     }
   ];
-
-  /** 跳转 BB 页面导入作业；导入成功后经 onPop 在此新增一条作业待办 */
-  openHomeworkImport(): void {
-    this.pathStack.pushPath({
-      name: 'GetHomework',
-      onPop: (popInfo: PopInfo) => {
-        if (typeof popInfo.result !== 'object' || popInfo.result === null) {
-          return;
-        }
-        const info = popInfo.result as BBHomeworkInfo;
-        const item: TodoItem = {
-          type: TodoType.Assignment,
-          text: info.title,
-          done: false,
-          submitted: false,
-          channels: [SubmitChannel.Blackboard],
-          priority: DEFAULT_PRIORITY
-        };
-        if (info.course !== undefined && info.course !== '') {
-          item.course = info.course;
-        }
-        if (info.description !== undefined && info.description !== '') {
-          item.description = info.description;
-        }
-        if (info.ddl !== null && info.ddl !== undefined) {
-          item.ddl = info.ddl;
-        }
-        addItem(item);
-        this.refresh();
-        this.getUIContext().getPromptAction().showToast({ message: `已导入作业：${info.title}` });
-      }
-    });
-  }
 
   build() {
     NavDestination() {
@@ -1108,6 +1072,8 @@ struct TodoPage {
     .backgroundColor(BackgroundImage.showImage ? Color.Transparent : $r('app.color.normal_background'))
     .onReady((context: NavDestinationContext) => {
       this.pathStack = context.pathStack;
+    })
+    .onShown(() => {
       this.loadCourseNames();
       this.refresh();
     })
