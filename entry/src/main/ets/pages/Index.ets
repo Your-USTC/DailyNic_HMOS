@@ -424,6 +424,10 @@ struct Index {
             }
             .width('100%')
             .padding(8)
+            .stateStyles({
+              normal: { .backgroundColor(Color.Transparent) },
+              clicked: { .backgroundColor($r('app.color.press_background')) }
+            })
             .onClick(() => {
               if (this.pageInfo.popToName('CheckinCollection') === -1) {
                 this.pageInfo.clear();
@@ -477,6 +481,7 @@ struct Index {
         }
         .width('100%')
         .borderRadius(20)
+        .clip(true)
         .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : '#0000')
         .backgroundBlurStyle(BackgroundImage.blurLevel);
       }
@@ -504,6 +509,10 @@ struct Index {
           .width('100%')
           .justifyContent(FlexAlign.SpaceBetween)
           .padding(8)
+          .stateStyles({
+            normal: { .backgroundColor(Color.Transparent) },
+            clicked: { .backgroundColor($r('app.color.press_background')) }
+          })
           .onClick(() => {
             if (this.pageInfo.popToName('Schedule') === -1) {
               this.pageInfo.clear();
@@ -703,6 +712,7 @@ struct Index {
       .width('100%')
       .borderRadius(20)
       .margin({ top: 5 })
+      .clip(true)
       .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : '#0000')
       .backgroundBlurStyle(BackgroundImage.blurLevel);
 
@@ -729,6 +739,10 @@ struct Index {
           .width('100%')
           .padding(8)
           .justifyContent(FlexAlign.SpaceBetween)
+          .stateStyles({
+            normal: { .backgroundColor(Color.Transparent) },
+            clicked: { .backgroundColor($r('app.color.press_background')) }
+          })
           .onClick(() => {
             if (this.pageInfo.popToName('ExamDetail') === -1) {
               this.pageInfo.clear();
@@ -808,6 +822,7 @@ struct Index {
       .width('100%')
       .borderRadius(20)
       .margin({ top: 5 })
+      .clip(true)
       .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : '#0000')
       .backgroundBlurStyle(BackgroundImage.blurLevel);
 
@@ -844,6 +859,10 @@ struct Index {
           .width('100%')
           .padding(8)
           .justifyContent(FlexAlign.SpaceBetween)
+          .stateStyles({
+            normal: { .backgroundColor(Color.Transparent) },
+            clicked: { .backgroundColor($r('app.color.press_background')) }
+          })
           .onClick(() => {
             if (this.pageInfo.popToName('Todo') === -1) {
               this.pageInfo.clear();
@@ -908,6 +927,7 @@ struct Index {
       .width('100%')
       .borderRadius(20)
       .margin({ top: 5 })
+      .clip(true)
       .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : '#0000')
       .backgroundBlurStyle(BackgroundImage.blurLevel);
 
@@ -1097,11 +1117,23 @@ struct Index {
       ForEach(SettingsData.getSettingListData(), (item: ItemData[], _index: number) => {
         ListItemGroup() {
           ForEach(item, (cell: ItemData, _cellIndex) => {
-            ListItem() {
-              this.settingCell(cell)
+            if (cell.others === undefined) { // 仅带箭头的跳转行加按压高亮（开关行点击无效果）
+              ListItem() {
+                this.settingCell(cell)
+              }
+              .height('48vp')
+              .stateStyles({
+                normal: { .backgroundColor(Color.Transparent) },
+                clicked: { .backgroundColor($r('app.color.press_background')) }
+              })
+              .onClick(() => this.settingAction(cell.id))
+            } else {
+              ListItem() {
+                this.settingCell(cell)
+              }
+              .height('48vp')
+              .onClick(() => this.settingAction(cell.id))
             }
-            .height('48vp')
-            .onClick(() => this.settingAction(cell.id))
           })
         }
         .divider({
@@ -1113,6 +1145,7 @@ struct Index {
         .backgroundColor(BackgroundImage.blurLevel === undefined ? $r('app.color.grid_background') : '#0000')
         .backgroundBlurStyle(BackgroundImage.blurLevel)
         .borderRadius(20)
+        .clip(true)
 
       }/*, (item: ItemData) => JSON.stringify(item)*/)
     }

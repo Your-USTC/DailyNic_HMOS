@@ -71,6 +71,10 @@
     {
       "name": "minute",
       "value": "#D674C1"
+    },
+    {
+      "name": "press_background",
+      "value": "#1000"
     }
   ]
 }
