@@ -9,6 +9,8 @@ import ScheduleManager from '../utils/Classes/ScheduleManager';
 import * as ScheduleStorage from '../utils/ScheduleStorage';
 import { classAttribute } from '../constants/ScheduleSources';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { camera, cameraPicker } from '@kit.CameraKit';
+import { common } from '@kit.AbilityKit';
 import { fileUri } from '@kit.CoreFileKit';
 import {
   SegmentButton, SegmentButtonOptions, SegmentButtonItemTuple
@@ -495,6 +497,24 @@ struct TodoPage {
     }
   }
 
+  /** 拍摄一张照片作为附图（后置相机）；照片存入图库并返回 uri，保存草稿时才导入私有目录 */
+  async takePhoto(): Promise<void> {
+    try {
+      const profile: cameraPicker.PickerProfile = {
+        cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
+      };
+      const result = await cameraPicker.pick(
+        this.getUIContext().getHostContext() as common.UIAbilityContext,
+        [cameraPicker.PickerMediaType.PHOTO], profile);
+      if (result.resultCode === 0 && result.resultUri !== '') {
+        const shot: DraftImage = { uri: result.resultUri };
+        this.draftImages = this.draftImages.concat([shot]);
+      }
+    } catch (e) {
+      console.error('Todo: takePhoto failed:', JSON.stringify(e));
+    }
+  }
+
   /** 移除草稿中的一张附图；已保存文件在 updateItem 时清理 */
   removeImage(index: number): void {
     this.draftImages = this.draftImages.filter((_: DraftImage, i: number): boolean => i !== index);
@@ -826,16 +846,22 @@ struct TodoPage {
 
           // 附图
           Column({ space: 5 }) {
-            Row() {
+            Row({ space: 6 }) {
               Text('附图')
-              Button('选择图片')
+                .layoutWeight(1)
+
+              Button('拍照')
+                .fontSize(13)
+                .height(32)
+                .onClick(() => this.takePhoto())
+                .backgroundColor(presetColor[BackgroundImage.themeColor].accentColor)
+              Button('图库')
                 .fontSize(13)
                 .height(32)
                 .onClick(() => this.pickImage())
                 .backgroundColor(presetColor[BackgroundImage.themeColor].accentColor)
             }
             .width('100%')
-            .justifyContent(FlexAlign.SpaceBetween)
 
             if (this.draftImages.length > 0) {
               Flex({ wrap: FlexWrap.Wrap }) {
