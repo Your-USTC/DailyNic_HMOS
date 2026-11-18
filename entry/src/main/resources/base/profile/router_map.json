@@ -79,6 +79,11 @@
       "name": "GetHomework",
       "pageSourceFile": "src/main/ets/pages/GetHomework.ets",
       "buildFunction": "GHWBuilder"
+    },
+    {
+      "name": "GetLibrary",
+      "pageSourceFile": "src/main/ets/pages/GetLibrary.ets",
+      "buildFunction": "GLLibraryBuilder"
     }
   ]
 }

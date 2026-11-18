@@ -1065,6 +1065,11 @@ struct TodoPage {
       value: '导入作业',
       icon: $r('app.media.cloud_download'),
       action: () => this.pathStack.pushPath({ name: 'GetHomework' })
+    },
+    {
+      value: '导入借阅',
+      icon: $r('app.media.import'),
+      action: () => this.pathStack.pushPath({ name: 'GetLibrary' })
     }
   ];
 
