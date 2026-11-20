@@ -118,12 +118,14 @@ export const LINK: LinkSet[] = [
       { url: 'https://young.ustc.edu.cn/login', subtitle: '青春科大(PC)' }],
       alias: ['二课']
     },
+    { title: $r('app.string.BenKeKeYanShiJian'), url: [{ url: 'https://rstar.ustc.edu.cn' }], icon: $r('app.media.rstar'),
+      alias: ['科社', 'Rstar', 'R星']
+    },
     { title: $r('app.string.JiaoWuChu'), url: [{ url: 'https://teach.ustc.edu.cn' }], icon: $r('app.media.JiaoWuChu') },
     { title: $r('app.string.LianXiFangShi'), icon: $r('app.media.LianXiFangShi'), url: [
       { url: 'https://www.teach.ustc.edu.cn/service/svc-student/4427.html', subtitle: '本科生教学秘书' },
       { url: 'https://gradschool.ustc.edu.cn/column/161', subtitle: '研究生教学秘书' },
-      { url: 'https://employment.ustc.edu.cn/cn/recruitment/uploadfile/P0327/635658093947187004.pdf', subtitle: '学校常用联系方式' },
-      { url: 'https://rstar.ustc.edu.cn', subtitle: '本科科研实践平台' }],
+      { url: 'https://employment.ustc.edu.cn/cn/recruitment/uploadfile/P0327/635658093947187004.pdf', subtitle: '学校常用联系方式' }],
       alias: ['教秘']
     },
     { title: $r('app.string.QinYouRuXiao'), url: [{ url: 'https://passport.ustc.edu.cn/login?service=http%3A%2F%2Fbwcqyrx.ustc.edu.cn%2Fweixin%2Fvalidate' }],
