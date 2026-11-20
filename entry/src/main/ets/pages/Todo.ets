@@ -13,7 +13,7 @@ import { camera, cameraPicker } from '@kit.CameraKit';
 import { common } from '@kit.AbilityKit';
 import { fileUri } from '@kit.CoreFileKit';
 import {
-  SegmentButton, SegmentButtonOptions, SegmentButtonItemTuple
+  SegmentButton, SegmentButtonOptions, SegmentButtonItemTuple, SymbolGlyphModifier
 } from '@kit.ArkUI';
 import { ImagePreview } from 'module_imagepreview';
 
@@ -802,7 +802,6 @@ struct TodoPage {
           Row() {
             Text('描述：')
             TextArea({ text: this.draftDescription })
-              .maxLines(4)
               .layoutWeight(1)
               .onChange((input: string) => {
                 this.draftDescription = input;
@@ -1068,7 +1067,7 @@ struct TodoPage {
     },
     {
       value: '导入借阅',
-      icon: $r('app.media.import'),
+      symbolIcon: new SymbolGlyphModifier($r('sys.symbol.book')),
       action: () => this.pathStack.pushPath({ name: 'GetLibrary' })
     }
   ];

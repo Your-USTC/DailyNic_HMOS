@@ -114,7 +114,12 @@ struct ThemeSetting {
       value: $r('app.string.ok_and_apply'),
       icon: $r('app.media.checkmark'),
       action: () => {
-        this.confirmAndApply();
+        try {
+          this.confirmAndApply();
+          this.getUIContext().getPromptAction().showToast({ message: $r('app.string.apply_in_real_time') });
+        } catch {
+          this.getUIContext().getPromptAction().showToast({ message: '保存失败，请重试' });
+        }
       }
     }
   ];

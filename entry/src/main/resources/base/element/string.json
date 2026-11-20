@@ -365,6 +365,10 @@
       "value": "强制单栏显示"
     },
     {
+      "name": "apply_in_real_time",
+      "value": "保存成功！已实时应用更改"
+    },
+    {
       "name": "try_to_custom_empty",
       "value": "那里不可以哦（指自定义）"
     },

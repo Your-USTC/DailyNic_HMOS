@@ -38,8 +38,13 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.NiDeChengJi'), url: [{ url: 'https://jw.ustc.edu.cn/for-std/grade/sheet' }], icon: $r('app.media.WoDeChengJi'), alias: ['分数', 'GPA', '绩点'] },
     { title: $r('app.string.bbJiaoXuePingTai'), url: [{ url: 'https://www.bb.ustc.edu.cn' }], icon: $r('app.media.bbJiaoXuePingTai') },
     { title: $r('app.string.HanHaiJiaoXueWang'), url: [{ url: 'http://course.ustc.edu.cn/portal' }], icon: $r('app.media.HanHaiJiaoXueWang') },
-    { title: $r('app.string.GongGongChaXun'), url: [{ url: 'https://catalog.ustc.edu.cn/query/lesson' }],
-      icon: $r('app.media.GongGongChaXun'), alias: ['教室查询', '培养方案查询', '替代课程查询'] },
+    { title: $r('app.string.GongGongChaXun'), url: [
+      { url: 'https://catalog.ustc.edu.cn/query/classroom', subtitle: '教室使用情况查询' },
+      { url: 'https://catalog.ustc.edu.cn/query/lesson', subtitle: '全校开课查询' },
+      { url: 'https://catalog.ustc.edu.cn/query/exam', subtitle: '全校考试查询' },
+      { url: 'https://catalog.ustc.edu.cn/plan', subtitle: '培养方案查询'},
+      { url: 'https://catalog.ustc.edu.cn/query/substitute', subtitle: '替代课程查询' }],
+      icon: $r('app.media.GongGongChaXun'), alias: ['教室查询'] },
     { title: $r('app.string.TuShuGuan'), url: [{ url: 'https://lib.ustc.edu.cn' }], icon: $r('app.media.TuShuGuan'), alias: ['借书', '还书'] },
     { title: $r('app.string.XueXiKongJian'), icon: $r('app.media.XueXiKongJian'), url: [
       { url: 'https://ic.lib.ustc.edu.cn/mobile.html#/ic/homePage', subtitle: '西图研讨室' },
@@ -61,7 +66,7 @@ export const LINK: LinkSet[] = [
       { url: 'https://ustcmathexam.github.io', subtitle: '数学' },
       { url: 'https://ustcphyexam.github.io', subtitle: '物理' },
       { url: 'https://github.com/ustcwpz/USTC-CS-Courses-Resource', subtitle: '计算机' }],
-      alias: ['考试真题']
+      alias: ['考试真题', '往年资料']
     },
     { title: $r('app.string.PingKeSheQu'), url: [{ url: 'https://icourse.club' }], icon: $r('app.media.PingKeSheQu') },
     { title: $r('app.string.ZhuJiaoXiTong'), url: [{ url: 'https://tam.cmet.ustc.edu.cn' }], icon: $r('app.media.ZhuJiaoXiTong') },
@@ -75,7 +80,7 @@ export const LINK: LinkSet[] = [
       { url: 'MockPracticeList', subtitle: '本地答题', notUrl: true },
       { url: 'https://ti.u5tc.cn/', subtitle: 'vitx 答题' },
       { url: 'https://quiz-stack.enthusjast.cc/', subtitle: 'Quiz Stack' }],
-      alias: ['史纲', '思政' ]
+      alias: ['史纲', '思政', '习概']
     },
     { title: $r('app.string.JiSuanGongJu'), icon: $r('app.media.JiSuanGongJu') , url: [
       { url: 'https://wolframalpha.com', subtitle: 'Wolfram Alpha' },
@@ -92,7 +97,9 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.JiYuanKeYanPingTai'), url: [{ url: 'https://cscourse.ustc.edu.cn' }], icon: $r('app.media.JiYuanKeYanPingTai'), alias: ['程设'] },
     { title: $r('app.string.Gitlab'), url: [{ url: 'https://git.ustc.edu.cn'}], icon: $r('app.media.GitLab'), alias: ['GitHub'] },
     { title: $r('app.string.Vlab'), url: [{ url: 'https://vlab.ustc.edu.cn' }], icon: $r('app.media.VlabShiYanZhongXin') },
-    { title: $r('app.string.CiYuanJiHua'), url: [{ url: 'https://llm.ustc.edu.cn/api/auth/oauth/login' }], icon: $r('app.media.CiYuanJiHua'), alias: ['api'] },
+    { title: $r('app.string.CiYuanJiHua'), icon: $r('app.media.CiYuanJiHua'), url: [
+      { url: 'https://llm.ustc.edu.cn/api/auth/oauth/login', subtitle: '词元计划' },
+      { url: 'http://id.ustc.edu.cn/tokenworks/credits', subtitle: '共享额度领取' }], alias: ['api'] },
     { title: $r('app.string.107'), icon: $r('app.media.107'), url: [
       { url: 'https://next.107.ustc.edu.cn', subtitle: '新版网站' },
       { url: 'https://107.ustc.edu.cn', subtitle: '旧版网站' }]},
@@ -151,7 +158,9 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.Nan7JiShi'), url: [{ url: 'https://nan7market.com' }], icon: $r('app.media.Nan7JiShi'), alias: ['跳蚤市场', '二手市场'] },
     { title: $r('app.string.Nan7LunTan'), url: [{ url: 'https://ustcforum.com' }], icon: $r('app.media.Nan7LunTan') },
     { title: $r('app.string.YingXinWang'), url: [{ url: 'http://welcome.ustc.edu.cn' }], icon: $r('app.media.YingXinWang') },
-    { title: 'QQ 身份验证', icon: $r('app.media.default_function_icon'), url: [{ url: 'https://qq.ustc.edu.cn' }]}
+    { title: $r('app.string.QQYanZheng'), icon: $r('app.media.QQYanZheng'), url: [
+      { url: 'https://qq.ustc.edu', subtitle: 'USTC 身份证明' },
+      { url: 'https://qq.ustc.life', subtitle: 'USTC QQ 号证明' }]}
     /* { title: "小游戏", icon: $r('app.media.default_function_icon'), url: [
       { url: $rawfile('snake.html'), subtitle: "贪吃蛇" },
       { url: $rawfile('minesweeper.html'), subtitle: "扫雷" }

@@ -134,19 +134,19 @@ struct LibraryImportPage {
   /** 组装条目描述：责任者 ｜ 馆藏地 ｜ 借阅日期 ｜ 条码号 */
   buildDescription(book: LibraryBookInfo): string {
     const parts: string[] = [];
-    if (book.author !== undefined && book.author !== '') {
-      parts.push(`责任者 ${book.author}`);
-    }
     if (book.location !== undefined && book.location !== '') {
       parts.push(`馆藏地 ${book.location}`);
     }
     if (book.borrowDate !== undefined && book.borrowDate !== '') {
-      parts.push(`借阅 ${book.borrowDate}`);
+      parts.push(`借阅日期 ${book.borrowDate}`);
+    }
+    if (book.author !== undefined && book.author !== '') {
+      parts.push(`责任者 ${book.author}`);
     }
     if (book.barcode !== undefined && book.barcode !== '') {
       parts.push(`条码号 ${book.barcode}`);
     }
-    return parts.join(' ｜ ');
+    return parts.join(' | ');
   }
 
   /** 执行页面脚本导入当前借阅；页面停留以便反复导入 */

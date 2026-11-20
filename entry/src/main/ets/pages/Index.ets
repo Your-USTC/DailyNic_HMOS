@@ -776,14 +776,18 @@ struct Index {
                       Text() {
                         Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 0).toString())
                           .fontColor($r('app.color.green'))
-                        Span(':')
+                          .fontSize(22)
+                        Span('天')
                         Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 1).toString())
                           .fontColor($r('app.color.hour'))
-                        Span(':')
+                          .fontSize(22)
+                        Span('时')
                         Span(tools.formatTimeDiff(this.currentTime.getTime(), singleExam.beginTimeStamp, 2).toString())
                           .fontColor($r('app.color.minute'))
+                          .fontSize(22)
+                        Span('分')
                       }
-                      .fontSize(22)
+                      .fontSize(14)
                       .fontColor($r('app.color.transparent_text'))
                     } else {
                       Text($r('app.string.exam_processing'))
