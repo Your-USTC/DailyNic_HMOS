@@ -161,11 +161,11 @@ export const LINK: LinkSet[] = [
     { title: $r('app.string.Nan7LunTan'), url: [{ url: 'https://ustcforum.com' }], icon: $r('app.media.Nan7LunTan') },
     { title: $r('app.string.YingXinWang'), url: [{ url: 'http://welcome.ustc.edu.cn' }], icon: $r('app.media.YingXinWang') },
     { title: $r('app.string.QQYanZheng'), icon: $r('app.media.QQYanZheng'), url: [
-      { url: 'https://qq.ustc.edu', subtitle: 'USTC 身份证明' },
-      { url: 'https://qq.ustc.life', subtitle: 'USTC QQ 号证明' }]}
-    /* { title: "小游戏", icon: $r('app.media.default_function_icon'), url: [
+      { url: 'https://qq.ustc.edu', subtitle: '新版网站' },
+      { url: 'https://qq.ustc.life', subtitle: '旧版网站' }]}
+/*  { title: "小游戏", icon: $r('app.media.default_function_icon'), url: [
       { url: $rawfile('snake.html'), subtitle: "贪吃蛇" },
-      { url: $rawfile('minesweeper.html'), subtitle: "扫雷" }
-    ]} */
+      { url: $rawfile('minesweeper.html'), subtitle: "扫雷" }]}
+*/
   ]}
 ]
