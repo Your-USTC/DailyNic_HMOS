@@ -63,6 +63,7 @@ export const LINK: LinkSet[] = [
       { url: 'https://share.feixu.site', subtitle: '我的科大' },
       { url: 'https://share.ustcer.top', subtitle: 'Share USTC' },
       { url: 'https://ustc-resource.github.io/USTC-Course', subtitle: 'USTC-Course' },
+      { url: 'https://twinjades.github.io/USTC_Study_Materials_Navigation', subtitle: '也西书架' },
       { url: 'https://ustcmathexam.github.io', subtitle: '数学' },
       { url: 'https://ustcphyexam.github.io', subtitle: '物理' },
       { url: 'https://github.com/ustcwpz/USTC-CS-Courses-Resource', subtitle: '计算机' }],
